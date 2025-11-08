@@ -13,11 +13,14 @@ export default function ProfilePage() {
   const userData = {
     name: 'John Doe',
     email: 'john.doe@example.com',
-    dietaryPreferences: ['Vegetarian', 'Gluten-Free'],
-    allergies: ['Dairy', 'Nuts'],
+    dietaryPreferences: ['Vegetarian', 'Gluten-Free', 'Low Carb'],
+    allergies: ['Dairy', 'Nuts', 'Shellfish'],
     favoriteDiningHalls: ['Berkshire', 'Worcester'],
     caloriesGoal: 2000,
   };
+
+  const preferenceColors = ['#3b82f6', '#14b8a6', '#8b5cf6', '#f97316', '#eab308'];
+  const allergyColors = ['#ef4444', '#f97316', '#ec4899'];
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -35,41 +38,114 @@ export default function ProfilePage() {
 
         {/* Profile Header - Large Circle Image */}
         <View className="items-center mb-8">
-          <View className="w-32 h-32 rounded-full bg-teal-500 items-center justify-center mb-4 shadow-lg">
+          <View className="w-32 h-32 rounded-full bg-teal-500 items-center justify-center mb-4"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          >
             <Ionicons name="person" size={64} color="white" />
           </View>
           <Text className="text-3xl font-bold text-gray-900 mb-2">{userData.name}</Text>
         </View>
 
-        {/* User Details - Directly on white background */}
-        <View className="mb-6">
-          <View className="mb-4">
-            <Text className="text-sm text-gray-500 mb-1">Dietary Preferences</Text>
-            <Text className="text-base text-gray-900">
-              {userData.dietaryPreferences.join(', ')}
-            </Text>
+        {/* Dietary Preferences Section */}
+        <View className="mb-4 p-4 bg-blue-50 rounded-2xl"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 2,
+            elevation: 1,
+          }}
+        >
+          <Text className="text-lg font-bold text-gray-900 mb-3">Dietary Preferences</Text>
+          <View className="flex-row flex-wrap">
+            {userData.dietaryPreferences.map((pref, index) => (
+              <View
+                key={pref}
+                className="px-4 py-2 rounded-full mr-2 mb-2"
+                style={{ backgroundColor: preferenceColors[index % preferenceColors.length] + '20' }}
+              >
+                <Text
+                  className="text-sm font-semibold"
+                  style={{ color: preferenceColors[index % preferenceColors.length] }}
+                >
+                  {pref}
+                </Text>
+              </View>
+            ))}
           </View>
+        </View>
 
-          <View className="mb-4">
-            <Text className="text-sm text-gray-500 mb-1">Allergies</Text>
-            <Text className="text-base text-gray-900">
-              {userData.allergies.join(', ')}
-            </Text>
+        {/* Allergies Section */}
+        <View className="mb-4 p-4 bg-red-50 rounded-2xl"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 2,
+            elevation: 1,
+          }}
+        >
+          <Text className="text-lg font-bold text-gray-900 mb-3">Allergies</Text>
+          <View className="flex-row flex-wrap">
+            {userData.allergies.map((allergy, index) => (
+              <View
+                key={allergy}
+                className="px-4 py-2 rounded-full mr-2 mb-2"
+                style={{ backgroundColor: allergyColors[index % allergyColors.length] + '20' }}
+              >
+                <Text
+                  className="text-sm font-semibold"
+                  style={{ color: allergyColors[index % allergyColors.length] }}
+                >
+                  {allergy}
+                </Text>
+              </View>
+            ))}
           </View>
+        </View>
 
-          <View className="mb-4">
-            <Text className="text-sm text-gray-500 mb-1">Favorite Dining Halls</Text>
-            <Text className="text-base text-gray-900">
-              {userData.favoriteDiningHalls.join(', ')}
-            </Text>
+        {/* Favorite Dining Halls Section */}
+        <View className="mb-4 p-4 bg-orange-50 rounded-2xl"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 2,
+            elevation: 1,
+          }}
+        >
+          <Text className="text-lg font-bold text-gray-900 mb-3">Favorite Dining Halls</Text>
+          <View>
+            {userData.favoriteDiningHalls.map((hall) => (
+              <View key={hall} className="flex-row items-center mb-2">
+                <Ionicons name="restaurant" size={20} color="#f97316" style={{ marginRight: 8 }} />
+                <Text className="text-base text-gray-900">{hall}</Text>
+              </View>
+            ))}
           </View>
+        </View>
 
-          <View className="mb-4">
-            <Text className="text-sm text-gray-500 mb-1">Calories Goal</Text>
-            <Text className="text-base text-gray-900">
-              {userData.caloriesGoal.toLocaleString()} kcal per day
-            </Text>
-          </View>
+        {/* Calories Goal Section */}
+        <View className="mb-6 p-4 bg-teal-50 rounded-2xl"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 2,
+            elevation: 1,
+          }}
+        >
+          <Text className="text-lg font-bold text-gray-900 mb-2">Calories Goal</Text>
+          <Text className="text-2xl font-bold text-teal-600">
+            {userData.caloriesGoal.toLocaleString()} kcal
+          </Text>
+          <Text className="text-sm text-gray-600 mt-1">per day</Text>
         </View>
 
         <Button

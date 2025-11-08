@@ -1,6 +1,7 @@
 import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, Animated, Image } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { DiningHallButton } from '../components/molecules/DiningHallButton';
+import { SearchBar } from '../components/molecules/SearchBar';
 import { Card } from '../components/molecules/Card';
 import { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
@@ -77,64 +78,6 @@ export default function MealPage() {
     }
   };
 
-  const renderMealCard = (meal: any, isAISuggestion: boolean = false) => {
-    const bgColors = ['#fff7ed', '#eff6ff', '#f5f3ff', '#fefce8', '#f0fdfa', '#fdf2f8'];
-    const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-    
-    return (
-      <TouchableOpacity
-        key={meal.name}
-        onPress={() => handleMealSelect(meal)}
-        className="w-[48%] mb-3"
-      >
-        <View
-          className="rounded-2xl overflow-hidden"
-          style={{ 
-            backgroundColor: bgColor,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            elevation: 1,
-          }}
-        >
-          {/* Top Icons */}
-          <View className="absolute top-2 left-2 right-2 z-10 flex-row justify-between items-start">
-            {isAISuggestion && (
-              <View className="w-6 h-6 bg-teal-500 rounded-full items-center justify-center">
-                <Ionicons name="sparkles" size={14} color="white" />
-              </View>
-            )}
-            <View className="bg-white/90 px-2 py-1 rounded-lg">
-              <Text className="text-xs font-semibold text-gray-900">
-                {meal.calories} kcal
-              </Text>
-            </View>
-          </View>
-
-          {/* Image Placeholder */}
-          <View className="w-full h-32 bg-gray-200 items-center justify-center">
-            {meal.image ? (
-              <Image source={{ uri: meal.image }} className="w-full h-full" />
-            ) : (
-              <Ionicons name="restaurant" size={40} color="#9ca3af" />
-            )}
-          </View>
-
-          {/* Content */}
-          <View className="p-3">
-            <Text className="text-base font-bold text-gray-900 mb-1" numberOfLines={1}>
-              {meal.name}
-            </Text>
-            <Text className="text-xs text-gray-600" numberOfLines={2}>
-              {meal.ingredients.join(', ')}
-            </Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
@@ -197,26 +140,138 @@ export default function MealPage() {
         {/* Step 2: Choose or Search Meal */}
         {step === 2 && (
           <View>
-            <Text className="text-2xl font-bold text-gray-900 mb-2">
-              Choose or search for a meal
-            </Text>
-            <Text className="text-base text-gray-600 mb-6">
-              Find your meal from {selectedHall}
-            </Text>
+            {/* Search Bar with Find meal from text */}
+            <View className="mb-6">
+              <SearchBar
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={`Find meal from ${selectedHall}...`}
+                className="bg-pink-50 rounded-xl"
+              />
+            </View>
 
-            {/* AI Suggestions Section - 2 Column Grid */}
+            {/* AI Suggestions Section - Horizontal Carousel */}
             <View className="mb-6">
               <Text className="text-xl font-bold text-gray-900 mb-3">AI Suggestions</Text>
-              <View className="flex-row flex-wrap justify-between">
-                {aiSuggestions.map((suggestion) => renderMealCard(suggestion, true))}
-              </View>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                snapToInterval={180}
+                decelerationRate="fast"
+                contentContainerStyle={{ paddingRight: 24 }}
+              >
+                {aiSuggestions.map((suggestion, index) => {
+                  const bgColors = ['#fff7ed', '#eff6ff', '#f5f3ff', '#fefce8', '#f0fdfa', '#fdf2f8'];
+                  const bgColor = bgColors[index % bgColors.length];
+                  
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => handleMealSelect(suggestion)}
+                      className="mr-3"
+                    >
+                      <View
+                        className="rounded-2xl overflow-hidden"
+                        style={{ 
+                          width: 160,
+                          backgroundColor: bgColor,
+                          shadowColor: '#000',
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.1,
+                          shadowRadius: 4,
+                          elevation: 3,
+                        }}
+                      >
+                        {/* Top Icons */}
+                        <View className="absolute top-2 left-2 right-2 z-10 flex-row justify-between items-start">
+                          <View className="w-6 h-6 bg-teal-500 rounded-full items-center justify-center">
+                            <Ionicons name="sparkles" size={14} color="white" />
+                          </View>
+                          <View className="bg-white/90 px-2 py-1 rounded-lg">
+                            <Text className="text-xs font-semibold text-gray-900">
+                              {suggestion.calories} kcal
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Image Placeholder - Centered */}
+                        <View className="w-full h-40 bg-gray-200 items-center justify-center">
+                          {suggestion.image ? (
+                            <Image source={{ uri: suggestion.image }} className="w-full h-full" />
+                          ) : (
+                            <Ionicons name="restaurant" size={48} color="#9ca3af" />
+                          )}
+                        </View>
+
+                        {/* Content - Dish Name Below */}
+                        <View className="p-3 items-center">
+                          <Text className="text-base font-semibold text-gray-900 text-center mb-1" numberOfLines={2}>
+                            {suggestion.name}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
             </View>
 
             {/* Available Meals - 2 Column Grid */}
             <View className="mb-6">
               <Text className="text-xl font-bold text-gray-900 mb-3">Available Meals</Text>
               <View className="flex-row flex-wrap justify-between">
-                {mealList.map((meal) => renderMealCard(meal, false))}
+                {mealList.map((meal, index) => {
+                  const bgColors = ['#fff7ed', '#eff6ff', '#f5f3ff', '#fefce8', '#f0fdfa', '#fdf2f8'];
+                  const bgColor = bgColors[index % bgColors.length];
+                  
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => handleMealSelect(meal)}
+                      className="w-[48%] mb-3"
+                    >
+                      <View
+                        className="rounded-2xl overflow-hidden"
+                        style={{ 
+                          backgroundColor: bgColor,
+                          shadowColor: '#000',
+                          shadowOffset: { width: 0, height: 1 },
+                          shadowOpacity: 0.05,
+                          shadowRadius: 2,
+                          elevation: 1,
+                        }}
+                      >
+                        {/* Top Right Calories */}
+                        <View className="absolute top-2 right-2 z-10">
+                          <View className="bg-white/90 px-2 py-1 rounded-lg">
+                            <Text className="text-xs font-semibold text-gray-900">
+                              {meal.calories} kcal
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Image Placeholder */}
+                        <View className="w-full h-32 bg-gray-200 items-center justify-center">
+                          {meal.image ? (
+                            <Image source={{ uri: meal.image }} className="w-full h-full" />
+                          ) : (
+                            <Ionicons name="restaurant" size={40} color="#9ca3af" />
+                          )}
+                        </View>
+
+                        {/* Content */}
+                        <View className="p-3">
+                          <Text className="text-base font-bold text-gray-900 mb-1" numberOfLines={1}>
+                            {meal.name}
+                          </Text>
+                          <Text className="text-xs text-gray-600" numberOfLines={2}>
+                            {meal.ingredients.join(', ')}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
           </View>
@@ -247,7 +302,7 @@ export default function MealPage() {
                   <Text className="text-base text-gray-700">
                     {selectedMeal.ingredients.join(', ')}
                   </Text>
-              </View>
+                </View>
               )}
               <View>
                 <Text className="text-sm text-gray-500 mb-1">Calories</Text>
