@@ -1,4 +1,4 @@
-import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, Animated, Image } from 'react-native';
+import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, Animated, Image, TextInput } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { DiningHallButton } from '../components/molecules/DiningHallButton';
 import { SearchBar } from '../components/molecules/SearchBar';
