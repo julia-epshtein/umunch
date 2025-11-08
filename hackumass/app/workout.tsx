@@ -136,18 +136,33 @@ export default function WorkoutPage() {
     };
   }, []);
 
+  const getWorkoutMatch = (type: string) => {
+    const typeLower = type.toLowerCase();
+    // Check for key words to match workout types
+    if (typeLower.includes('run')) return workoutTypes.find(w => w.name.toLowerCase().includes('run'));
+    if (typeLower.includes('cycle') || typeLower.includes('bike')) return workoutTypes.find(w => w.name.toLowerCase().includes('cycl'));
+    if (typeLower.includes('yoga')) return workoutTypes.find(w => w.name.toLowerCase().includes('yoga'));
+    if (typeLower.includes('weight') || typeLower.includes('train')) return workoutTypes.find(w => w.name.toLowerCase().includes('weight'));
+    if (typeLower.includes('swim')) return workoutTypes.find(w => w.name.toLowerCase().includes('swim'));
+    if (typeLower.includes('walk')) return workoutTypes.find(w => w.name.toLowerCase().includes('walk'));
+    // Fallback to direct match
+    return workoutTypes.find(w => 
+      typeLower.includes(w.name.toLowerCase()) || w.name.toLowerCase().includes(typeLower)
+    );
+  };
+
   const getWorkoutIcon = (type: string) => {
-    const workout = workoutTypes.find(w => type.toLowerCase().includes(w.name.toLowerCase()));
+    const workout = getWorkoutMatch(type);
     return workout?.icon || 'fitness';
   };
 
   const getWorkoutColor = (type: string) => {
-    const workout = workoutTypes.find(w => type.toLowerCase().includes(w.name.toLowerCase()));
+    const workout = getWorkoutMatch(type);
     return workout?.color || '#6b7280';
   };
 
   const getWorkoutBgColor = (type: string) => {
-    const workout = workoutTypes.find(w => type.toLowerCase().includes(w.name.toLowerCase()));
+    const workout = getWorkoutMatch(type);
     return workout?.bgColor || '#f3f4f6';
   };
 
@@ -164,11 +179,6 @@ export default function WorkoutPage() {
           backgroundColor: getWorkoutBgColor(workout.type),
           opacity: isCompleted ? 0.7 : 1,
           minHeight: 160, // Taller containers
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 3 },
-          shadowOpacity: 0.12,
-          shadowRadius: 6,
-          elevation: 4,
         }}
       >
         <View className="flex-col">
