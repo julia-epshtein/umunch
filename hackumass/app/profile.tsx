@@ -1,92 +1,76 @@
-import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, Animated } from 'react-native';
+import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
-import { Card } from '../components/molecules/Card';
-import { Button } from '../components/atoms/Button';
-import { FormField } from '../components/molecules/FormField';
+import { Button } from '../atoms/Button';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  
-  const [profileData, setProfileData] = useState({
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Sample user data - in production, this would come from state/API
+  const userData = {
     name: 'John Doe',
     email: 'john.doe@example.com',
-    dietaryPreferences: 'Vegetarian',
-    fitnessGoals: 'Weight Loss',
-  });
-
-  const [editData, setEditData] = useState(profileData);
-
-  const handleEditProfile = () => {
-    setEditData(profileData);
-    setShowEditModal(true);
-  };
-
-  const handleSave = () => {
-    setProfileData(editData);
-    setShowEditModal(false);
-    setShowSuccess(true);
-    
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-
-    setTimeout(() => {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => {
-        setShowSuccess(false);
-      });
-    }, 2000);
+    dietaryPreferences: ['Vegetarian', 'Gluten-Free'],
+    allergies: ['Dairy', 'Nuts'],
+    favoriteDiningHalls: ['Berkshire', 'Worcester'],
+    caloriesGoal: 2000,
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
-        <Text className="text-4xl font-bold text-gray-900 mb-2">Profile</Text>
-        <Text className="text-lg text-gray-600 mb-6">Manage your account and settings</Text>
-
-        <Card className="mb-4 shadow-md border border-gray-200">
-          <View className="items-center mb-4">
-            <View className="w-24 h-24 rounded-full bg-teal-500 items-center justify-center mb-3 shadow-lg">
-              <Ionicons name="person" size={48} color="white" />
-            </View>
-            <Text className="text-2xl font-bold text-gray-900">{profileData.name}</Text>
-            <Text className="text-gray-600">{profileData.email}</Text>
-          </View>
-        </Card>
-
-        <Card className="mb-4 shadow-md border border-gray-200">
-          <Text className="text-xl font-bold text-gray-900 mb-4">Settings</Text>
-          <TouchableOpacity 
-            className="py-3 border-b border-gray-200 flex-row items-center justify-between"
-            onPress={handleEditProfile}
+        {/* Header with Settings Icon */}
+        <View className="flex-row items-center justify-between mb-6">
+          <Text className="text-4xl font-bold text-gray-900">Profile</Text>
+          <TouchableOpacity
+            onPress={() => setShowSettings(true)}
+            className="w-10 h-10 items-center justify-center"
           >
-            <Text className="text-gray-700 font-medium">Edit Profile</Text>
-            <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+            <Ionicons name="settings-outline" size={24} color="#374151" />
           </TouchableOpacity>
-          <TouchableOpacity className="py-3 border-b border-gray-200 flex-row items-center justify-between">
-            <Text className="text-gray-700 font-medium">Dietary Preferences</Text>
-            <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-          </TouchableOpacity>
-          <TouchableOpacity className="py-3 border-b border-gray-200 flex-row items-center justify-between">
-            <Text className="text-gray-700 font-medium">Fitness Goals</Text>
-            <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-          </TouchableOpacity>
-          <TouchableOpacity className="py-3 flex-row items-center justify-between">
-            <Text className="text-gray-700 font-medium">Notifications</Text>
-            <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-          </TouchableOpacity>
-        </Card>
+        </View>
+
+        {/* Profile Header - Large Circle Image */}
+        <View className="items-center mb-8">
+          <View className="w-32 h-32 rounded-full bg-teal-500 items-center justify-center mb-4 shadow-lg">
+            <Ionicons name="person" size={64} color="white" />
+          </View>
+          <Text className="text-3xl font-bold text-gray-900 mb-2">{userData.name}</Text>
+        </View>
+
+        {/* User Details - Directly on white background */}
+        <View className="mb-6">
+          <View className="mb-4">
+            <Text className="text-sm text-gray-500 mb-1">Dietary Preferences</Text>
+            <Text className="text-base text-gray-900">
+              {userData.dietaryPreferences.join(', ')}
+            </Text>
+          </View>
+
+          <View className="mb-4">
+            <Text className="text-sm text-gray-500 mb-1">Allergies</Text>
+            <Text className="text-base text-gray-900">
+              {userData.allergies.join(', ')}
+            </Text>
+          </View>
+
+          <View className="mb-4">
+            <Text className="text-sm text-gray-500 mb-1">Favorite Dining Halls</Text>
+            <Text className="text-base text-gray-900">
+              {userData.favoriteDiningHalls.join(', ')}
+            </Text>
+          </View>
+
+          <View className="mb-4">
+            <Text className="text-sm text-gray-500 mb-1">Calories Goal</Text>
+            <Text className="text-base text-gray-900">
+              {userData.caloriesGoal.toLocaleString()} kcal per day
+            </Text>
+          </View>
+        </View>
 
         <Button
           title="Sign Out"
@@ -95,92 +79,47 @@ export default function ProfilePage() {
         />
       </ScrollView>
 
-      {/* Edit Profile Modal */}
+      {/* Settings Modal */}
       <Modal
-        visible={showEditModal}
+        visible={showSettings}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowEditModal(false)}
+        onRequestClose={() => setShowSettings(false)}
       >
         <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-white rounded-t-3xl shadow-2xl" style={{ maxHeight: '90%' }}>
-            {/* Handle bar */}
-            <View className="items-center pt-3 pb-2">
-              <View className="w-12 h-1 bg-gray-300 rounded-full" />
+          <View className="bg-white rounded-t-3xl p-6" style={{ maxHeight: '60%' }}>
+            <View className="flex-row justify-between items-center mb-6">
+              <Text className="text-2xl font-bold text-gray-900">Settings</Text>
+              <TouchableOpacity onPress={() => setShowSettings(false)}>
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
             </View>
 
-            {/* Header */}
-            <View className="px-6 pt-4 pb-6 border-b border-gray-100">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-2xl font-bold text-gray-900">Edit Profile</Text>
-                <TouchableOpacity
-                  onPress={() => setShowEditModal(false)}
-                  className="w-8 h-8 items-center justify-center"
-                >
-                  <Ionicons name="close" size={24} color="#6b7280" />
-                </TouchableOpacity>
-              </View>
-            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <TouchableOpacity className="py-4 border-b border-gray-200 flex-row items-center justify-between">
+                <Text className="text-base font-medium text-gray-900">Edit Profile</Text>
+                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+              </TouchableOpacity>
 
-            <ScrollView className="px-6 py-6" showsVerticalScrollIndicator={false}>
-              <FormField
-                label="Full Name"
-                value={editData.name}
-                onChangeText={(text) => setEditData({ ...editData, name: text })}
-                placeholder="Enter your name"
-              />
+              <TouchableOpacity className="py-4 border-b border-gray-200 flex-row items-center justify-between">
+                <Text className="text-base font-medium text-gray-900">Help & Support</Text>
+                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+              </TouchableOpacity>
 
-              <FormField
-                label="Email"
-                value={editData.email}
-                onChangeText={(text) => setEditData({ ...editData, email: text })}
-                placeholder="Enter your email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-
-              <FormField
-                label="Dietary Preferences"
-                value={editData.dietaryPreferences}
-                onChangeText={(text) => setEditData({ ...editData, dietaryPreferences: text })}
-                placeholder="Enter dietary preferences"
-              />
-
-              <FormField
-                label="Fitness Goals"
-                value={editData.fitnessGoals}
-                onChangeText={(text) => setEditData({ ...editData, fitnessGoals: text })}
-                placeholder="Enter fitness goals"
-              />
-
-              <Button
-                title="Save Changes"
-                onPress={handleSave}
-                className="mt-6 mb-6"
-              />
+              <TouchableOpacity 
+                className="py-4 flex-row items-center justify-between"
+                onPress={() => {
+                  setShowSettings(false);
+                  router.push('/login');
+                }}
+              >
+                <Text className="text-base font-medium text-red-600">Sign Out</Text>
+                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
       </Modal>
-
-      {/* Success Toast */}
-      {showSuccess && (
-        <Animated.View
-          style={{
-            opacity: fadeAnim,
-            transform: [{ translateY: fadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [-50, 0]
-            })}],
-          }}
-          className="absolute top-16 left-6 right-6 bg-green-500 rounded-xl p-4 flex-row items-center shadow-lg z-50"
-        >
-          <View className="w-8 h-8 bg-white rounded-full items-center justify-center mr-3">
-            <Ionicons name="checkmark" size={20} color="#15803d" />
-          </View>
-          <Text className="text-white font-semibold flex-1">Profile updated successfully!</Text>
-        </Animated.View>
-      )}
 
       <BottomNavigation />
     </SafeAreaView>

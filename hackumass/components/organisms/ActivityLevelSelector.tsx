@@ -53,14 +53,6 @@ export const ActivityLevelSelector: React.FC<{
     }
   };
 
-  const handleSkip = () => {
-    if (onSkip) {
-      onSkip();
-    } else {
-      router.push('/dining-hall');
-    }
-  };
-
   const canProceed = () => selectedLevel !== null;
 
   return (
@@ -119,45 +111,23 @@ export const ActivityLevelSelector: React.FC<{
         </View>
       </ScrollView>
 
-      {/* Navigation buttons at bottom */}
+      {/* Navigation buttons at bottom - Only Back and Continue */}
       <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
-        <View className="flex-row justify-between items-center mb-3">
+        <View className="flex-row justify-between items-center">
           <TouchableOpacity
             onPress={handleBack}
-            className="w-12 h-12 items-center justify-center"
+            className="px-6 py-3 bg-gray-100 rounded-xl"
           >
-            <Ionicons name="arrow-back" size={24} color="#374151" />
+            <Text className="text-gray-700 font-semibold text-base">Back</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity
-            onPress={handleSkip}
-            className="px-4 py-2"
-          >
-            <Text className="text-gray-600 font-medium">Skip</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
+          <Button
+            title="Continue"
             onPress={handleNext}
             disabled={!canProceed()}
-            className={`w-12 h-12 items-center justify-center rounded-full ${
-              canProceed() ? 'bg-teal-500' : 'bg-gray-300'
-            }`}
-          >
-            <Ionicons 
-              name="arrow-forward" 
-              size={24} 
-              color={canProceed() ? "white" : "#9ca3af"} 
-            />
-          </TouchableOpacity>
+            className="flex-1 ml-4"
+          />
         </View>
-        
-        {/* Continue Button - Primary CTA */}
-        <Button
-          title="Continue"
-          onPress={handleNext}
-          disabled={!canProceed()}
-          className="w-full"
-        />
       </View>
     </View>
   );

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Modal, TouchableOpacity, TextInput } from 'react-native';
 import { FormField } from '../molecules/FormField';
 import { DatePicker } from '../atoms/DatePicker';
-import { RadioButton } from '../atoms/RadioButton';
 import { ProgressBar } from '../molecules/ProgressBar';
 import { Button } from '../atoms/Button';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +13,7 @@ interface UserInfoFormData {
   heightInches: number;
   weight: string;
   gender: string;
+  otherGender?: string;
 }
 
 interface UserInfoFormProps {
@@ -22,6 +22,14 @@ interface UserInfoFormProps {
   totalSteps?: number;
   onSkip?: () => void;
 }
+
+const genderOptions = [
+  { id: 'male', label: 'Male', color: '#3b82f6', bgColor: '#eff6ff' },
+  { id: 'female', label: 'Female', color: '#ec4899', bgColor: '#fdf2f8' },
+  { id: 'non-binary', label: 'Non-binary', color: '#8b5cf6', bgColor: '#f5f3ff' },
+  { id: 'prefer-not-to-say', label: 'Prefer not to say', color: '#6b7280', bgColor: '#f3f4f6' },
+  { id: 'other', label: 'Other', color: '#14b8a6', bgColor: '#f0fdfa' },
+];
 
 export const UserInfoForm: React.FC<UserInfoFormProps> = ({ 
   onNext, 
@@ -37,6 +45,7 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
     heightInches: 10,
     weight: '',
     gender: '',
+    otherGender: '',
   });
   const [showHeightPicker, setShowHeightPicker] = useState(false);
   const internalSteps = 4;
@@ -60,14 +69,6 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
     }
   };
 
-  const handleSkip = () => {
-    if (onSkip) {
-      onSkip();
-    } else {
-      router.push('/dietary-restrictions');
-    }
-  };
-
   const canProceed = () => {
     switch (step) {
       case 1:
@@ -77,7 +78,7 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
       case 3:
         return formData.weight.trim() !== '';
       case 4:
-        return formData.gender !== '';
+        return formData.gender !== '' && (formData.gender !== 'other' || formData.otherGender?.trim() !== '');
       default:
         return false;
     }
@@ -168,21 +169,34 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
               This helps us calculate your calorie needs
             </Text>
             <View className="mb-6">
-              <RadioButton
-                label="Male"
-                selected={formData.gender === 'male'}
-                onPress={() => setFormData({ ...formData, gender: 'male' })}
-              />
-              <RadioButton
-                label="Female"
-                selected={formData.gender === 'female'}
-                onPress={() => setFormData({ ...formData, gender: 'female' })}
-              />
-              <RadioButton
-                label="Other"
-                selected={formData.gender === 'other'}
-                onPress={() => setFormData({ ...formData, gender: 'other' })}
-              />
+              {genderOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.id}
+                  onPress={() => setFormData({ ...formData, gender: option.id })}
+                  className="mb-3 p-4 rounded-2xl border-2"
+                  style={{
+                    borderColor: formData.gender === option.id ? option.color : '#e5e7eb',
+                    backgroundColor: formData.gender === option.id ? option.bgColor : 'white',
+                    borderWidth: formData.gender === option.id ? 3 : 2,
+                  }}
+                >
+                  <Text className="text-base font-semibold text-gray-900">
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+              
+              {/* Other Gender Text Input */}
+              {formData.gender === 'other' && (
+                <View className="mt-3">
+                  <TextInput
+                    value={formData.otherGender}
+                    onChangeText={(text) => setFormData({ ...formData, otherGender: text })}
+                    placeholder="Please specify"
+                    className="bg-gray-50 border-2 border-gray-300 rounded-xl px-4 py-4 text-gray-900"
+                  />
+                </View>
+              )}
             </View>
           </View>
         );
@@ -204,45 +218,23 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
         </View>
       </ScrollView>
 
-      {/* Navigation buttons at bottom */}
+      {/* Navigation buttons at bottom - Only Back and Continue */}
       <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
-        <View className="flex-row justify-between items-center mb-3">
+        <View className="flex-row justify-between items-center">
           <TouchableOpacity
             onPress={handleBack}
-            className="w-12 h-12 items-center justify-center"
+            className="px-6 py-3 bg-gray-100 rounded-xl"
           >
-            <Ionicons name="arrow-back" size={24} color={step > 1 ? "#374151" : "#9ca3af"} />
+            <Text className="text-gray-700 font-semibold text-base">Back</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity
-            onPress={handleSkip}
-            className="px-4 py-2"
-          >
-            <Text className="text-gray-600 font-medium">Skip</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
+          <Button
+            title="Continue"
             onPress={handleNext}
             disabled={!canProceed()}
-            className={`w-12 h-12 items-center justify-center rounded-full ${
-              canProceed() ? 'bg-teal-500' : 'bg-gray-300'
-            }`}
-          >
-            <Ionicons 
-              name="arrow-forward" 
-              size={24} 
-              color={canProceed() ? "white" : "#9ca3af"} 
-            />
-          </TouchableOpacity>
+            className="flex-1 ml-4"
+          />
         </View>
-        
-        {/* Continue Button - Primary CTA */}
-        <Button
-          title={step === internalSteps ? 'Continue' : 'Continue'}
-          onPress={handleNext}
-          disabled={!canProceed()}
-          className="w-full"
-        />
       </View>
 
       {/* Height Picker Modal - iOS Style Scroll Wheel */}
@@ -286,7 +278,6 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                <Text className="text-sm text-gray-600 mt-2">ft</Text>
               </View>
 
               {/* Inches Picker */}
@@ -314,7 +305,6 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                <Text className="text-sm text-gray-600 mt-2">in</Text>
               </View>
             </View>
             <TouchableOpacity

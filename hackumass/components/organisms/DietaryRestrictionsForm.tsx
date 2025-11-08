@@ -85,14 +85,6 @@ export const DietaryRestrictionsForm: React.FC<{
     }
   };
 
-  const handleSkip = () => {
-    if (onSkip) {
-      onSkip();
-    } else {
-      router.push('/goals');
-    }
-  };
-
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -228,37 +220,22 @@ export const DietaryRestrictionsForm: React.FC<{
         </View>
       </ScrollView>
 
-      {/* Navigation buttons at bottom */}
+      {/* Navigation buttons at bottom - Only Back and Continue */}
       <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
-        <View className="flex-row justify-between items-center mb-3">
+        <View className="flex-row justify-between items-center">
           <TouchableOpacity
             onPress={handleBack}
-            className="w-12 h-12 items-center justify-center"
+            className="px-6 py-3 bg-gray-100 rounded-xl"
           >
-            <Ionicons name="arrow-back" size={24} color="#374151" />
+            <Text className="text-gray-700 font-semibold text-base">Back</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity
-            onPress={handleSkip}
-            className="px-4 py-2"
-          >
-            <Text className="text-gray-600 font-medium">Skip</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
+          <Button
+            title="Continue"
             onPress={handleNext}
-            className="w-12 h-12 items-center justify-center rounded-full bg-teal-500"
-          >
-            <Ionicons name="arrow-forward" size={24} color="white" />
-          </TouchableOpacity>
+            className="flex-1 ml-4"
+          />
         </View>
-        
-        {/* Continue Button - Primary CTA */}
-        <Button
-          title="Continue"
-          onPress={handleNext}
-          className="w-full"
-        />
       </View>
     </View>
   );

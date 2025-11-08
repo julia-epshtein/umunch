@@ -97,7 +97,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                <Text className="text-sm text-gray-600 mt-2">Month</Text>
               </View>
 
               {/* Day Picker */}
@@ -125,7 +124,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                <Text className="text-sm text-gray-600 mt-2">Day</Text>
               </View>
 
               {/* Year Picker */}
@@ -153,7 +151,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-                <Text className="text-sm text-gray-600 mt-2">Year</Text>
               </View>
             </View>
 

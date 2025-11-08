@@ -1,7 +1,6 @@
-import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, Animated } from 'react-native';
+import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, Animated, Image } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { DiningHallButton } from '../components/molecules/DiningHallButton';
-import { SearchBar } from '../components/molecules/SearchBar';
 import { Card } from '../components/molecules/Card';
 import { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
@@ -19,16 +18,21 @@ export default function MealPage() {
   const diningHalls = ['Berkshire', 'Worcester', 'Franklin', 'Hampshire', 'Grab N Go', 'Other'];
 
   const aiSuggestions = [
-    { name: 'Grilled Chicken Salad', ingredients: ['Chicken', 'Lettuce', 'Tomatoes', 'Cucumber'], calories: 320 },
-    { name: 'Quinoa Bowl', ingredients: ['Quinoa', 'Black Beans', 'Avocado', 'Corn'], calories: 450 },
-    { name: 'Greek Yogurt Parfait', ingredients: ['Yogurt', 'Berries', 'Granola', 'Honey'], calories: 280 },
-    { name: 'Veggie Wrap', ingredients: ['Tortilla', 'Hummus', 'Vegetables'], calories: 380 },
+    { name: 'Grilled Chicken Salad', ingredients: ['Chicken', 'Lettuce', 'Tomatoes', 'Cucumber'], calories: 320, image: null },
+    { name: 'Quinoa Bowl', ingredients: ['Quinoa', 'Black Beans', 'Avocado', 'Corn'], calories: 450, image: null },
+    { name: 'Greek Yogurt Parfait', ingredients: ['Yogurt', 'Berries', 'Granola', 'Honey'], calories: 280, image: null },
+    { name: 'Veggie Wrap', ingredients: ['Tortilla', 'Hummus', 'Vegetables'], calories: 380, image: null },
+    { name: 'Caesar Salad', ingredients: ['Romaine', 'Caesar Dressing', 'Croutons'], calories: 250, image: null },
+    { name: 'Pasta Primavera', ingredients: ['Pasta', 'Mixed Vegetables', 'Olive Oil'], calories: 420, image: null },
   ];
 
   const mealList = [
-    { name: 'Caesar Salad', ingredients: ['Romaine', 'Caesar Dressing', 'Croutons', 'Parmesan'], calories: 250 },
-    { name: 'Pasta Primavera', ingredients: ['Pasta', 'Mixed Vegetables', 'Olive Oil'], calories: 420 },
-    { name: 'Grilled Salmon', ingredients: ['Salmon', 'Lemon', 'Herbs'], calories: 350 },
+    { name: 'Caesar Salad', ingredients: ['Romaine', 'Caesar Dressing', 'Croutons', 'Parmesan'], calories: 250, image: null },
+    { name: 'Pasta Primavera', ingredients: ['Pasta', 'Mixed Vegetables', 'Olive Oil'], calories: 420, image: null },
+    { name: 'Grilled Salmon', ingredients: ['Salmon', 'Lemon', 'Herbs'], calories: 350, image: null },
+    { name: 'Chicken Teriyaki', ingredients: ['Chicken', 'Rice', 'Vegetables', 'Teriyaki Sauce'], calories: 480, image: null },
+    { name: 'Vegetable Stir Fry', ingredients: ['Mixed Vegetables', 'Soy Sauce', 'Ginger'], calories: 320, image: null },
+    { name: 'Beef Burger', ingredients: ['Beef Patty', 'Bun', 'Lettuce', 'Tomato'], calories: 550, image: null },
   ];
 
   const handleStep1Next = () => {
@@ -50,7 +54,6 @@ export default function MealPage() {
       useNativeDriver: true,
     }).start();
     
-    // In production, save meal to state/API
     setTimeout(() => {
       setShowConfirmation(false);
       setStep(1);
@@ -74,6 +77,64 @@ export default function MealPage() {
     }
   };
 
+  const renderMealCard = (meal: any, isAISuggestion: boolean = false) => {
+    const bgColors = ['#fff7ed', '#eff6ff', '#f5f3ff', '#fefce8', '#f0fdfa', '#fdf2f8'];
+    const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+    
+    return (
+      <TouchableOpacity
+        key={meal.name}
+        onPress={() => handleMealSelect(meal)}
+        className="w-[48%] mb-3"
+      >
+        <View
+          className="rounded-2xl overflow-hidden"
+          style={{ 
+            backgroundColor: bgColor,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 2,
+            elevation: 1,
+          }}
+        >
+          {/* Top Icons */}
+          <View className="absolute top-2 left-2 right-2 z-10 flex-row justify-between items-start">
+            {isAISuggestion && (
+              <View className="w-6 h-6 bg-teal-500 rounded-full items-center justify-center">
+                <Ionicons name="sparkles" size={14} color="white" />
+              </View>
+            )}
+            <View className="bg-white/90 px-2 py-1 rounded-lg">
+              <Text className="text-xs font-semibold text-gray-900">
+                {meal.calories} kcal
+              </Text>
+            </View>
+          </View>
+
+          {/* Image Placeholder */}
+          <View className="w-full h-32 bg-gray-200 items-center justify-center">
+            {meal.image ? (
+              <Image source={{ uri: meal.image }} className="w-full h-full" />
+            ) : (
+              <Ionicons name="restaurant" size={40} color="#9ca3af" />
+            )}
+          </View>
+
+          {/* Content */}
+          <View className="p-3">
+            <Text className="text-base font-bold text-gray-900 mb-1" numberOfLines={1}>
+              {meal.name}
+            </Text>
+            <Text className="text-xs text-gray-600" numberOfLines={2}>
+              {meal.ingredients.join(', ')}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
@@ -82,7 +143,9 @@ export default function MealPage() {
           <TouchableOpacity onPress={handleBack} className="mr-4">
             <Ionicons name="arrow-back" size={24} color="#374151" />
           </TouchableOpacity>
-          <Text className="text-4xl font-bold text-gray-900">Log Meal</Text>
+          <Text className="text-4xl font-bold text-gray-900">
+            {step === 2 && selectedHall ? selectedHall : 'Add Meal'}
+          </Text>
         </View>
 
         {/* Progress indicator */}
@@ -141,56 +204,20 @@ export default function MealPage() {
               Find your meal from {selectedHall}
             </Text>
 
-            {/* Search Bar */}
-            <View className="mb-6">
-              <SearchBar
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder="Search for meals..."
-              />
-            </View>
-
-            {/* AI Suggestions Section */}
+            {/* AI Suggestions Section - 2 Column Grid */}
             <View className="mb-6">
               <Text className="text-xl font-bold text-gray-900 mb-3">AI Suggestions</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {aiSuggestions.map((suggestion, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => handleMealSelect(suggestion)}
-                  >
-                    <Card className="mr-3 w-64 bg-orange-50">
-                      <View className="flex-row items-center mb-2">
-                        <Ionicons name="sparkles" size={20} color="#14b8a6" />
-                        <Text className="font-bold text-gray-900 ml-2 text-lg">{suggestion.name}</Text>
-                      </View>
-                      <Text className="text-sm text-gray-600 mb-2">
-                        {suggestion.ingredients.join(', ')}
-                      </Text>
-                      <Text className="text-teal-600 font-semibold">{suggestion.calories} cal</Text>
-                    </Card>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              <View className="flex-row flex-wrap justify-between">
+                {aiSuggestions.map((suggestion) => renderMealCard(suggestion, true))}
+              </View>
             </View>
 
-            {/* Available Meals */}
+            {/* Available Meals - 2 Column Grid */}
             <View className="mb-6">
               <Text className="text-xl font-bold text-gray-900 mb-3">Available Meals</Text>
-              {mealList.map((meal, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => handleMealSelect(meal)}
-                >
-                  <Card className="mb-3 bg-pink-50">
-                    <Text className="font-bold text-gray-900 mb-2 text-lg">{meal.name}</Text>
-                    <Text className="text-sm text-gray-600 mb-2">
-                      {meal.ingredients.join(', ')}
-                    </Text>
-                    <Text className="text-teal-600 font-semibold">{meal.calories} calories</Text>
-                  </Card>
-                </TouchableOpacity>
-              ))}
+              <View className="flex-row flex-wrap justify-between">
+                {mealList.map((meal) => renderMealCard(meal, false))}
+              </View>
             </View>
           </View>
         )}
@@ -220,7 +247,7 @@ export default function MealPage() {
                   <Text className="text-base text-gray-700">
                     {selectedMeal.ingredients.join(', ')}
                   </Text>
-                </View>
+              </View>
               )}
               <View>
                 <Text className="text-sm text-gray-500 mb-1">Calories</Text>
