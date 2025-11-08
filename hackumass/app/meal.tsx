@@ -140,13 +140,28 @@ export default function MealPage() {
         {/* Step 2: Choose or Search Meal */}
         {step === 2 && (
           <View>
-            {/* Search Bar with Find meal from text */}
-            <View className="mb-6">
-              <SearchBar
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder={`Find meal from ${selectedHall}...`}
-              />
+            {/* Search Bar with Find meal from text and Microphone */}
+            <View className="mb-6 flex-row items-center">
+              <View className="flex-1">
+                <SearchBar
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder={`Find meal from ${selectedHall}...`}
+                  className="mb-0"
+                />
+              </View>
+              <TouchableOpacity
+                className="ml-3 w-14 h-14 bg-teal-500 rounded-xl items-center justify-center"
+                style={{
+                  shadowColor: '#14b8a6',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
+              >
+                <Ionicons name="mic" size={24} color="white" />
+              </TouchableOpacity>
             </View>
 
             {/* AI Suggestions Section - Horizontal Carousel */}

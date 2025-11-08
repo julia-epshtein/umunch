@@ -17,7 +17,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   return (
     <View className={`mb-4 relative ${className}`}>
-      <View className="flex-row items-center bg-white rounded-xl px-4 py-3 border border-gray-200"
+      <View className="flex-row items-center bg-white rounded-xl px-4 h-14 border border-gray-200"
         style={{
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 1 },
