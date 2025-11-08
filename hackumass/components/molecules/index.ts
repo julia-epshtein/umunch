@@ -5,3 +5,6 @@ export { Card } from './Card';
 export { SearchBar } from './SearchBar';
 export { GoalCard } from './GoalCard';
 export { DiningHallButton } from './DiningHallButton';
+export { DonutChart } from './DonutChart';
+export { TripleDonutChart } from './TripleDonutChart';
+export { ProgressBar } from './ProgressBar';

@@ -1,5 +1,6 @@
-import { SafeAreaView } from 'react-native';
+import { SafeAreaView, View } from 'react-native';
 import { DietaryRestrictionsForm } from '../components/organisms/DietaryRestrictionsForm';
+import { ProgressBar } from '../components/molecules/ProgressBar';
 import { useRouter } from 'expo-router';
 
 export default function DietaryRestrictionsPage() {
@@ -11,8 +12,8 @@ export default function DietaryRestrictionsPage() {
 
   return (
     <SafeAreaView className="flex-1">
+      <ProgressBar currentStep={2} totalSteps={6} />
       <DietaryRestrictionsForm onNext={handleNext} />
     </SafeAreaView>
   );
 }
-

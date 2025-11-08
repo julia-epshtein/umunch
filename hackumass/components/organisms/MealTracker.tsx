@@ -3,83 +3,72 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Card } from '../molecules/Card';
 import { Button } from '../atoms/Button';
 import { SearchBar } from '../molecules/SearchBar';
+import { useRouter } from 'expo-router';
 
 interface Meal {
   id: string;
   name: string;
   ingredients: string[];
   calories: number;
+  mealType?: string;
 }
 
 export const MealTracker: React.FC = () => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [meals, setMeals] = useState<Meal[]>([]);
 
-  const aiSuggestions = [
-    { name: 'Grilled Chicken Salad', calories: 320 },
-    { name: 'Quinoa Bowl', calories: 450 },
-    { name: 'Greek Yogurt Parfait', calories: 280 },
-  ];
-
-  const handleAddMeal = (mealName: string, calories: number) => {
-    const newMeal: Meal = {
-      id: Date.now().toString(),
-      name: mealName,
-      ingredients: [],
-      calories,
-    };
-    setMeals([...meals, newMeal]);
+  const handleAddMeal = () => {
+    router.push('/meal');
   };
 
   return (
     <View className="flex-1">
-      <SearchBar
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="Search for meals..."
-      />
-
+      {/* Today's Meals Section */}
       <View className="mb-4">
-        <Text className="text-lg font-bold text-gray-900 mb-3">AI Suggestions</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {aiSuggestions.map((suggestion, index) => (
-            <Card
-              key={index}
-              onPress={() => handleAddMeal(suggestion.name, suggestion.calories)}
-              className="mr-3 w-48"
-            >
-              <Text className="font-semibold text-gray-900 mb-1">{suggestion.name}</Text>
-              <Text className="text-sm text-gray-600">{suggestion.calories} cal</Text>
-            </Card>
-          ))}
-        </ScrollView>
-      </View>
-
-      <View>
-        <Text className="text-lg font-bold text-gray-900 mb-3">Today's Meals</Text>
         {meals.length === 0 ? (
-          <Card>
-            <Text className="text-gray-500 text-center">No meals added yet</Text>
+          <Card className="p-6">
+            <Text className="text-gray-500 text-center mb-4">No meals logged today</Text>
+            <Button
+              title="+ Add Meal"
+              onPress={handleAddMeal}
+              className="mt-2"
+            />
           </Card>
         ) : (
-          meals.map((meal) => (
-            <Card key={meal.id} className="mb-3">
-              <View className="flex-row justify-between items-center">
-                <View className="flex-1">
-                  <Text className="font-semibold text-gray-900 mb-1">{meal.name}</Text>
-                  <Text className="text-sm text-gray-600">{meal.calories} calories</Text>
+          <View>
+            {meals.map((meal) => (
+              <Card key={meal.id} className="mb-3">
+                <View className="flex-row justify-between items-center">
+                  <View className="flex-1">
+                    {meal.mealType && (
+                      <Text className="text-xs text-gray-500 uppercase mb-1">{meal.mealType}</Text>
+                    )}
+                    <Text className="font-semibold text-gray-900 mb-1">{meal.name}</Text>
+                    {meal.ingredients.length > 0 && (
+                      <Text className="text-sm text-gray-600 mb-1">
+                        {meal.ingredients.join(', ')}
+                      </Text>
+                    )}
+                    <Text className="text-sm text-teal-600 font-semibold">{meal.calories} calories</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => setMeals(meals.filter(m => m.id !== meal.id))}
+                    className="ml-4"
+                  >
+                    <Text className="text-red-500 font-semibold">Remove</Text>
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  onPress={() => setMeals(meals.filter(m => m.id !== meal.id))}
-                >
-                  <Text className="text-red-500 font-semibold">Remove</Text>
-                </TouchableOpacity>
-              </View>
-            </Card>
-          ))
+              </Card>
+            ))}
+            <Button
+              title="+ Add Another Meal"
+              onPress={handleAddMeal}
+              className="mt-2"
+            />
+          </View>
         )}
       </View>
     </View>
   );
 };
-

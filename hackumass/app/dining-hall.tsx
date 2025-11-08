@@ -1,5 +1,6 @@
-import { SafeAreaView } from 'react-native';
+import { SafeAreaView, View } from 'react-native';
 import { DiningHallSelector } from '../components/organisms/DiningHallSelector';
+import { ProgressBar } from '../components/molecules/ProgressBar';
 import { useRouter } from 'expo-router';
 
 export default function DiningHallPage() {
@@ -12,8 +13,8 @@ export default function DiningHallPage() {
 
   return (
     <SafeAreaView className="flex-1">
+      <ProgressBar currentStep={5} totalSteps={6} />
       <DiningHallSelector onNext={handleNext} />
     </SafeAreaView>
   );
 }
-
