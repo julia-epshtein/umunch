@@ -1,6 +1,5 @@
 import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
-import { Card } from '../components/molecules/Card';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef, useEffect } from 'react';
@@ -122,6 +121,12 @@ export default function WorkoutPage() {
     }
   };
 
+  const handleUndoMarkComplete = (workoutId: string) => {
+    setWorkouts(workouts.map(w => 
+      w.id === workoutId ? { ...w, completed: false } : w
+    ));
+  };
+
   // Cleanup timer on unmount
   useEffect(() => {
     return () => {
@@ -151,79 +156,92 @@ export default function WorkoutPage() {
       key={workout.id}
       onLongPress={() => handleLongPress(workout.id)}
       activeOpacity={0.7}
-      style={{ marginBottom: 16 }} // Increased vertical spacing
+      style={{ marginBottom: 20 }} // Increased vertical spacing
     >
-      <Card
+      <View
         className="p-5 rounded-2xl"
         style={{ 
           backgroundColor: getWorkoutBgColor(workout.type),
-          opacity: isCompleted ? 0.6 : 1,
-          minHeight: 140, // Taller containers
+          opacity: isCompleted ? 0.7 : 1,
+          minHeight: 160, // Taller containers
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 3,
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.12,
+          shadowRadius: 6,
+          elevation: 4,
         }}
       >
         <View className="flex-col">
           {/* Top Section: Icon, Name, Details, Calories */}
-          <View className="flex-row items-start mb-4">
+          <View className="flex-row items-start mb-5">
             {/* Left Icon */}
             <View
-              className="w-16 h-16 rounded-full items-center justify-center mr-4"
-              style={{ backgroundColor: getWorkoutColor(workout.type) + '20' }}
+              className="w-18 h-18 rounded-full items-center justify-center mr-4"
+              style={{ backgroundColor: getWorkoutColor(workout.type) + '25' }}
             >
               <Ionicons
                 name={getWorkoutIcon(workout.type) as any}
-                size={32}
+                size={36}
                 color={getWorkoutColor(workout.type)}
               />
             </View>
 
             {/* Center Content */}
             <View className="flex-1">
-              <View className="flex-row items-center mb-1">
-                <Text className={`text-lg font-bold text-gray-900 mr-2 ${
+              <View className="flex-row items-center mb-2">
+                <Text className={`text-xl font-bold text-gray-900 mr-2 ${
                   isCompleted ? 'line-through' : ''
                 }`}>
                   {workout.type}
                 </Text>
                 {isCompleted && (
-                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                  <Ionicons name="checkmark-circle" size={22} color="#10b981" />
                 )}
               </View>
-              <Text className="text-sm text-gray-600 mb-2">
+              <Text className="text-base text-gray-600 mb-3">
                 {workout.duration} min
-                {workout.distance && ` • ${workout.distance} km`}
               </Text>
               <View className="flex-row items-center">
-                <Ionicons name="flame" size={16} color="#f97316" />
-                <Text className="text-base font-bold text-gray-900 ml-1">
+                <Ionicons name="flame" size={18} color="#f97316" />
+                <Text className="text-lg font-bold text-gray-900 ml-2">
                   {workout.calories} kcal
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* Bottom Section: Mark Complete Button */}
+          {/* Bottom Section: Mark Complete / Undo Mark Complete Button */}
           {!isCompleted ? (
             <TouchableOpacity
               onPress={() => handleMarkComplete(workout.id)}
-              className="w-full py-3 bg-teal-500 rounded-lg items-center mt-2"
+              className="w-full py-4 bg-teal-500 rounded-xl items-center justify-center"
+              style={{
+                shadowColor: '#14b8a6',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+                elevation: 3,
+              }}
             >
               <Text className="text-white font-semibold text-base">Mark Complete</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              onPress={() => handleEdit(workout.id)}
-              className="w-full py-3 bg-gray-100 rounded-lg items-center mt-2"
+              onPress={() => handleUndoMarkComplete(workout.id)}
+              className="w-full py-4 bg-gray-200 rounded-xl items-center justify-center"
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.1,
+                shadowRadius: 2,
+                elevation: 2,
+              }}
             >
-              <Text className="text-gray-700 font-semibold text-base">Edit</Text>
+              <Text className="text-gray-700 font-semibold text-base">Undo Mark Complete</Text>
             </TouchableOpacity>
           )}
         </View>
-      </Card>
+      </View>
     </TouchableOpacity>
   );
 
@@ -231,37 +249,53 @@ export default function WorkoutPage() {
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View className="mb-6">
-          <Text className="text-4xl font-bold text-gray-900 mb-2">Today</Text>
+        <View className="mb-8">
+          <Text className="text-4xl font-bold text-gray-900">Today</Text>
         </View>
 
         {/* Undo Toast */}
         {undoWorkoutId && (
-          <View className="mb-4 p-4 bg-gray-800 rounded-xl flex-row items-center justify-between">
-            <Text className="text-white font-medium">Workout marked as complete</Text>
+          <View className="mb-5 p-4 bg-gray-800 rounded-xl flex-row items-center justify-between"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.2,
+              shadowRadius: 4,
+              elevation: 4,
+            }}
+          >
+            <Text className="text-white font-medium text-base">Workout marked as complete</Text>
             <TouchableOpacity onPress={handleUndo}>
-              <Text className="text-teal-400 font-semibold">Undo</Text>
+              <Text className="text-teal-400 font-semibold text-base">Undo</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Today's Workouts Section */}
         {activeWorkouts.length > 0 ? (
-          <View className="mb-6">
-            <Text className="text-xl font-bold text-gray-900 mb-3">Today's Workouts</Text>
+          <View className="mb-8">
+            <Text className="text-2xl font-bold text-gray-900 mb-4">Today's Workouts</Text>
             {activeWorkouts.map(workout => renderWorkoutCard(workout, false))}
           </View>
         ) : (
-          <View className="mb-6 p-8 items-center bg-gray-50 rounded-2xl">
-            <Ionicons name="fitness-outline" size={48} color="#9ca3af" />
-            <Text className="text-gray-500 text-center mt-4">No workouts logged today</Text>
+          <View className="mb-8 p-10 items-center bg-gray-50 rounded-2xl"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <Ionicons name="fitness-outline" size={56} color="#9ca3af" />
+            <Text className="text-gray-500 text-center mt-4 text-base">No workouts logged today</Text>
           </View>
         )}
 
         {/* Completed Workouts Section - Only show if there are completed workouts */}
         {completedWorkouts.length > 0 && (
-          <View className="mb-6">
-            <Text className="text-xl font-bold text-gray-900 mb-3">Completed Workouts</Text>
+          <View className="mb-8">
+            <Text className="text-2xl font-bold text-gray-900 mb-4">Completed Workouts</Text>
             {completedWorkouts.map(workout => renderWorkoutCard(workout, true))}
           </View>
         )}
@@ -269,7 +303,14 @@ export default function WorkoutPage() {
         {/* Add Workout Button */}
         <TouchableOpacity
           onPress={() => setShowAddModal(true)}
-          className="py-4 rounded-xl items-center bg-teal-500"
+          className="py-5 rounded-xl items-center bg-teal-500"
+          style={{
+            shadowColor: '#14b8a6',
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.3,
+            shadowRadius: 6,
+            elevation: 5,
+          }}
         >
           <Text className="font-semibold text-lg text-white">+ Add Workout</Text>
         </TouchableOpacity>
@@ -346,9 +387,9 @@ export default function WorkoutPage() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
-                    setSelectedWorkoutType(null);
-                    setDurationInput('');
-                  }}
+                  setSelectedWorkoutType(null);
+                  setDurationInput('');
+                }}
                   className="py-4 rounded-xl items-center mt-3"
                 >
                   <Text className="font-semibold text-lg text-gray-600">Back</Text>
