@@ -171,14 +171,21 @@ export default function WorkoutPage() {
       key={workout.id}
       onLongPress={() => handleLongPress(workout.id)}
       activeOpacity={0.7}
-      style={{ marginBottom: 20 }} // Increased vertical spacing
+      style={{ marginBottom: 24 }} // More spacing between cards
     >
       <View
-        className="p-5 rounded-2xl"
+        className="p-6 rounded-2xl"
         style={{ 
           backgroundColor: getWorkoutBgColor(workout.type),
           opacity: isCompleted ? 0.7 : 1,
-          minHeight: 160, // Taller containers
+          minHeight: 160,
+          borderWidth: 2,
+          borderColor: getWorkoutColor(workout.type) + '30', // Semi-transparent border matching the workout color
+          shadowColor: getWorkoutColor(workout.type),
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.15,
+          shadowRadius: 4,
+          elevation: 3,
         }}
       >
         <View className="flex-col">
@@ -224,11 +231,12 @@ export default function WorkoutPage() {
           {!isCompleted ? (
             <TouchableOpacity
               onPress={() => handleMarkComplete(workout.id)}
-              className="w-full py-4 bg-teal-500 rounded-xl items-center justify-center"
+              className="w-full py-4 rounded-xl items-center justify-center"
               style={{
-                shadowColor: '#14b8a6',
+                backgroundColor: getWorkoutColor(workout.type) + '85', // 85 = ~52% opacity
+                shadowColor: getWorkoutColor(workout.type),
                 shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.2,
+                shadowOpacity: 0.3,
                 shadowRadius: 4,
                 elevation: 3,
               }}
