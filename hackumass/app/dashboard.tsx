@@ -4,6 +4,7 @@ import { Card } from '../components/molecules/Card';
 import { Button } from '../components/atoms/Button';
 import { MealTracker } from '../components/organisms/MealTracker';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -68,9 +69,10 @@ export default function DashboardPage() {
               <Text className="text-teal-500 font-semibold">Add/Edit</Text>
             </TouchableOpacity>
           </View>
-          <View className={`p-3 rounded-xl ${workoutCompleted ? 'bg-green-100' : 'bg-gray-100'}`}>
+          <View className={`p-3 rounded-xl ${workoutCompleted ? 'bg-green-100' : 'bg-gray-100'} flex-row items-center`}>
+            {workoutCompleted && <Ionicons name="checkmark-circle" size={20} color="#15803d" style={{ marginRight: 8 }} />}
             <Text className={`font-semibold ${workoutCompleted ? 'text-green-700' : 'text-gray-700'}`}>
-              {workoutCompleted ? '✓ Workout Completed' : 'Workout Not Completed'}
+              {workoutCompleted ? 'Workout Completed' : 'Workout Not Completed'}
             </Text>
           </View>
         </Card>

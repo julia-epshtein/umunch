@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { View } from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface IconProps {
   name: string;
@@ -8,42 +9,50 @@ interface IconProps {
   className?: string;
 }
 
-// Simple emoji-based icons for now (can be replaced with icon library later)
-const iconMap: Record<string, string> = {
-  home: '🏠',
-  calendar: '📅',
-  meals: '🍽️',
-  workouts: '🏋️‍♂️',
-  profile: '👤',
-  running: '🏃',
-  cycling: '🚴',
-  yoga: '🧘',
-  weights: '💪',
-  weightGain: '📈',
-  weightLoss: '📉',
-  maintainWeight: '⚖️',
-  calorie: '🔥',
-  homeWorkout: '🏡',
+type IconComponentType = typeof Ionicons | typeof MaterialCommunityIcons;
+
+interface IconMapEntry {
+  component: IconComponentType;
+  name: string;
+}
+
+// Map of icon names to actual icon components and names
+const iconMap: Record<string, IconMapEntry> = {
+  home: { component: Ionicons, name: 'home' },
+  calendar: { component: Ionicons, name: 'calendar' },
+  meals: { component: Ionicons, name: 'restaurant' },
+  workouts: { component: MaterialCommunityIcons, name: 'dumbbell' },
+  profile: { component: Ionicons, name: 'person' },
+  running: { component: Ionicons, name: 'walk' },
+  cycling: { component: Ionicons, name: 'bicycle' },
+  yoga: { component: MaterialCommunityIcons, name: 'yoga' },
+  weights: { component: MaterialCommunityIcons, name: 'weight-lifter' },
+  weightGain: { component: Ionicons, name: 'trending-up' },
+  weightLoss: { component: Ionicons, name: 'trending-down' },
+  maintainWeight: { component: MaterialCommunityIcons, name: 'scale-balance' },
+  calorie: { component: Ionicons, name: 'flame' },
+  homeWorkout: { component: Ionicons, name: 'home' },
 };
 
 export const Icon: React.FC<IconProps> = ({
   name,
   size = 24,
-  color,
+  color = '#000',
   className = '',
 }) => {
-  const emoji = iconMap[name] || '•';
+  const iconConfig = iconMap[name];
+  
+  if (!iconConfig) {
+    // Fallback to a default icon if name not found
+    return <Ionicons name="ellipse" size={size} color={color} />;
+  }
+
+  const IconComponent = iconConfig.component;
   
   return (
-    <Text
-      className={className}
-      style={{
-        fontSize: size,
-        color: color,
-      }}
-    >
-      {emoji}
-    </Text>
+    <View className={className}>
+      <IconComponent name={iconConfig.name as any} size={size} color={color} />
+    </View>
   );
 };
 

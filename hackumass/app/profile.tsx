@@ -3,6 +3,7 @@ import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { Card } from '../components/molecules/Card';
 import { Button } from '../components/atoms/Button';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function ProfilePage() {
         <Card className="mb-4">
           <View className="items-center mb-4">
             <View className="w-24 h-24 rounded-full bg-teal-500 items-center justify-center mb-3">
-              <Text className="text-4xl">👤</Text>
+              <Ionicons name="person" size={48} color="white" />
             </View>
             <Text className="text-2xl font-bold text-gray-900">John Doe</Text>
             <Text className="text-gray-600">john.doe@example.com</Text>

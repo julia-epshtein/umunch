@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { Input } from '../atoms/Input';
+import { Ionicons } from '@expo/vector-icons';
 
 interface SearchBarProps {
   value: string;
@@ -24,7 +25,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         className="pl-10"
       />
       <View className="absolute left-3 top-4">
-        <Text className="text-base">🔍</Text>
+        <Ionicons name="search" size={20} color="#6b7280" />
       </View>
     </View>
   );

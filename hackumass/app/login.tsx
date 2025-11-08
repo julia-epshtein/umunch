@@ -4,6 +4,7 @@ import { Button } from '../components/atoms/Button';
 import { LinkText } from '../components/molecules/LinkText';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,7 +31,7 @@ export default function LoginPage() {
           <View className="px-6 pt-12 pb-8">
             {/* Logo/Branding */}
             <View className="items-center mb-12">
-              <Text className="text-5xl mb-2">🍽️</Text>
+              <Ionicons name="restaurant" size={60} color="#14b8a6" />
               <Text className="text-3xl font-bold text-gray-900">uMunch</Text>
             </View>
 

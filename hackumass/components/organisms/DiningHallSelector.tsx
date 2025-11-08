@@ -5,9 +5,11 @@ import { Input } from '../atoms/Input';
 import { Button } from '../atoms/Button';
 
 const diningHalls = [
-  'Dining Hall A',
-  'Dining Hall B',
-  'Dining Hall C',
+  'Berkshire',
+  'Worcester',
+  'Franklin',
+  'Hampshire',
+  'Grab N Go',
   'Other',
 ];
 
@@ -46,7 +48,7 @@ export const DiningHallSelector: React.FC<{ onNext: (diningHall: string) => void
             <Input
               value={otherHall}
               onChangeText={setOtherHall}
-              placeholder="Enter dining hall name"
+              placeholder="Enter name"
             />
           </View>
         )}
