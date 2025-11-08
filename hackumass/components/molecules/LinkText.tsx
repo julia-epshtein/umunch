@@ -20,7 +20,7 @@ export const LinkText: React.FC<LinkTextProps> = ({
       <Text className="text-gray-600 text-base">{preText} </Text>
       <Link href={href} asChild>
         <TouchableOpacity>
-          <Text className="text-blue-600 font-semibold text-base">
+          <Text className="text-teal-600 font-semibold text-base">
             {linkText}
           </Text>
         </TouchableOpacity>

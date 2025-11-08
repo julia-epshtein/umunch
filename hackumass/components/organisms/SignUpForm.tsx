@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import { FormField } from '../molecules/FormField';
 import { Button } from '../atoms/Button';
 import { LinkText } from '../molecules/LinkText';
@@ -19,6 +20,7 @@ interface FormErrors {
 }
 
 export const SignUpForm: React.FC = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState<SignUpFormData>({
     fullName: '',
     email: '',
@@ -73,16 +75,10 @@ export const SignUpForm: React.FC = () => {
     // Simulate API call
     setTimeout(() => {
       console.log('Sign up successful:', formData);
-      alert('Account created successfully!');
       setLoading(false);
-      // Reset form
-      setFormData({
-        fullName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      });
-    }, 2000);
+      // Navigate to user info page
+      router.push('/user-info');
+    }, 1500);
   };
 
   return (
@@ -163,7 +159,7 @@ export const SignUpForm: React.FC = () => {
           <LinkText
             preText="Already have an account?"
             linkText="Log In"
-            href="/"
+            href="/login"
           />
         </View>
       </ScrollView>

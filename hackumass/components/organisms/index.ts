@@ -1,1 +1,8 @@
 export { SignUpForm } from './SignUpForm';
+export { UserInfoForm } from './UserInfoForm';
+export { DietaryRestrictionsForm } from './DietaryRestrictionsForm';
+export { GoalsSetup } from './GoalsSetup';
+export { ActivityLevelSelector } from './ActivityLevelSelector';
+export { DiningHallSelector } from './DiningHallSelector';
+export { MealTracker } from './MealTracker';
+export { WorkoutForm } from './WorkoutForm';

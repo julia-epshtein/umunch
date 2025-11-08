@@ -21,15 +21,15 @@ export const Button: React.FC<ButtonProps> = ({
   const baseStyles = 'py-4 px-6 rounded-xl items-center justify-center';
   
   const variantStyles = {
-    primary: 'bg-blue-600 active:bg-blue-700',
-    secondary: 'bg-gray-600 active:bg-gray-700',
-    outline: 'bg-transparent border-2 border-blue-600',
+    primary: 'bg-teal-500 active:bg-teal-600',
+    secondary: 'bg-pink-400 active:bg-pink-500',
+    outline: 'bg-transparent border-2 border-teal-500',
   };
 
   const textStyles = {
     primary: 'text-white font-semibold text-lg',
     secondary: 'text-white font-semibold text-lg',
-    outline: 'text-blue-600 font-semibold text-lg',
+    outline: 'text-teal-600 font-semibold text-lg',
   };
 
   const disabledStyles = disabled || loading ? 'opacity-50' : '';
