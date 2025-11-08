@@ -146,7 +146,6 @@ export default function MealPage() {
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder={`Find meal from ${selectedHall}...`}
-                className="bg-pink-50 rounded-xl"
               />
             </View>
 
@@ -174,6 +173,7 @@ export default function MealPage() {
                         className="rounded-2xl overflow-hidden"
                         style={{ 
                           width: 160,
+                          height: 200, // Uniform height for all cards
                           backgroundColor: bgColor,
                           shadowColor: '#000',
                           shadowOffset: { width: 0, height: 2 },
@@ -195,7 +195,7 @@ export default function MealPage() {
                         </View>
 
                         {/* Image Placeholder - Centered */}
-                        <View className="w-full h-40 bg-gray-200 items-center justify-center">
+                        <View className="w-full h-32 bg-gray-200 items-center justify-center">
                           {suggestion.image ? (
                             <Image source={{ uri: suggestion.image }} className="w-full h-full" />
                           ) : (
@@ -204,8 +204,8 @@ export default function MealPage() {
                         </View>
 
                         {/* Content - Dish Name Below */}
-                        <View className="p-3 items-center">
-                          <Text className="text-base font-semibold text-gray-900 text-center mb-1" numberOfLines={2}>
+                        <View className="p-3 items-center flex-1 justify-center">
+                          <Text className="text-base font-semibold text-gray-900 text-center" numberOfLines={2}>
                             {suggestion.name}
                           </Text>
                         </View>

@@ -169,22 +169,26 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
               This helps us calculate your calorie needs
             </Text>
             <View className="mb-6">
-              {genderOptions.map((option) => (
-                <TouchableOpacity
-                  key={option.id}
-                  onPress={() => setFormData({ ...formData, gender: option.id })}
-                  className="mb-3 p-4 rounded-2xl border-2"
-                  style={{
-                    borderColor: formData.gender === option.id ? option.color : '#e5e7eb',
-                    backgroundColor: formData.gender === option.id ? option.bgColor : 'white',
-                    borderWidth: formData.gender === option.id ? 3 : 2,
-                  }}
-                >
-                  <Text className="text-base font-semibold text-gray-900">
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {genderOptions.map((option) => {
+                const isSelected = formData.gender === option.id;
+                // Use consistent styling for all options (matching "Other" style)
+                return (
+                  <TouchableOpacity
+                    key={option.id}
+                    onPress={() => setFormData({ ...formData, gender: option.id })}
+                    className="mb-3 p-4 rounded-2xl border-2"
+                    style={{
+                      borderColor: isSelected ? option.color : '#e5e7eb',
+                      backgroundColor: isSelected ? option.bgColor : 'white',
+                      borderWidth: isSelected ? 3 : 2,
+                    }}
+                  >
+                    <Text className="text-base font-semibold text-gray-900">
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
               
               {/* Other Gender Text Input */}
               {formData.gender === 'other' && (
@@ -229,7 +233,7 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
           </TouchableOpacity>
           
           <Button
-            title="Continue"
+            title={step === internalSteps ? 'Continue' : 'Continue'}
             onPress={handleNext}
             disabled={!canProceed()}
             className="flex-1 ml-4"

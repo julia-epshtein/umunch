@@ -22,20 +22,19 @@ export default function LoginPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-pink-50">
+    <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           <View className="px-6 pt-12 pb-8">
-            {/* Logo/Branding */}
-            <View className="items-center mb-12">
-              <Ionicons name="restaurant" size={60} color="#14b8a6" />
-              <Text className="text-3xl font-bold text-gray-900">uMunch</Text>
+            {/* Brand Title - Largest and Most Prominent */}
+            <View className="items-center mb-16 mt-8">
+              <Text className="text-6xl font-bold text-gray-900 mb-2">UMunch</Text>
             </View>
 
-            <Text className="text-4xl font-bold text-gray-900 mb-2">
+            <Text className="text-3xl font-bold text-gray-900 mb-2">
               Welcome Back
             </Text>
             <Text className="text-lg text-gray-600 mb-8">
@@ -62,15 +61,10 @@ export default function LoginPage() {
               autoCapitalize="none"
             />
 
-            <View className="flex-row justify-between items-center mb-6">
+            <View className="mb-6">
               <TouchableOpacity onPress={() => {/* Handle forgot password */}}>
                 <Text className="text-teal-600 font-semibold text-base">
                   Forgot password?
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => {/* Handle mobile login */}}>
-                <Text className="text-teal-600 font-semibold text-base">
-                  Log in with Mobile
                 </Text>
               </TouchableOpacity>
             </View>
@@ -93,4 +87,3 @@ export default function LoginPage() {
     </SafeAreaView>
   );
 }
-

@@ -110,7 +110,7 @@ export default function ProfilePage() {
           </View>
         </View>
 
-        {/* Favorite Dining Halls Section */}
+        {/* Favorite Dining Hall Section */}
         <View className="mb-4 p-4 bg-orange-50 rounded-2xl"
           style={{
             shadowColor: '#000',
@@ -120,7 +120,7 @@ export default function ProfilePage() {
             elevation: 1,
           }}
         >
-          <Text className="text-lg font-bold text-gray-900 mb-3">Favorite Dining Halls</Text>
+          <Text className="text-lg font-bold text-gray-900 mb-3">Favorite Dining Hall</Text>
           <View>
             {userData.favoriteDiningHalls.map((hall) => (
               <View key={hall} className="flex-row items-center mb-2">

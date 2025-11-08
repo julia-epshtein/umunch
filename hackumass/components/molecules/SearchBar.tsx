@@ -17,7 +17,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   return (
     <View className={`mb-4 relative ${className}`}>
-      <View className="flex-row items-center bg-pink-50 rounded-xl px-4 py-3"
+      <View className="flex-row items-center bg-white rounded-xl px-4 py-3 border border-gray-200"
         style={{
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 1 },
@@ -26,7 +26,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           elevation: 2,
         }}
       >
-        <Ionicons name="search" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
+        <Ionicons name="search" size={20} color="#6b7280" style={{ marginRight: 12 }} />
         <TextInput
           value={value}
           onChangeText={onChangeText}
