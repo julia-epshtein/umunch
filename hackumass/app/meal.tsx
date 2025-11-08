@@ -143,12 +143,24 @@ export default function MealPage() {
             {/* Search Bar with Find meal from text and Microphone */}
             <View className="mb-6 flex-row items-center">
               <View className="flex-1">
-                <SearchBar
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholder={`Find meal from ${selectedHall}...`}
-                  className="mb-0"
-                />
+                <View className="flex-row items-center bg-white rounded-xl px-4 h-14 border border-gray-200"
+                  style={{
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 3,
+                    elevation: 2,
+                  }}
+                >
+                  <Ionicons name="search" size={20} color="#6b7280" style={{ marginRight: 12 }} />
+                  <TextInput
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    placeholder={`Find meal from ${selectedHall}...`}
+                    placeholderTextColor="#9ca3af"
+                    className="flex-1 text-gray-900 text-base"
+                  />
+                </View>
               </View>
               <TouchableOpacity
                 className="ml-3 w-14 h-14 bg-teal-500 rounded-xl items-center justify-center"
