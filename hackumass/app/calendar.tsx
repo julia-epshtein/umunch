@@ -87,6 +87,9 @@ export default function CalendarPage() {
   
   // Get weekday for selected date
   const selectedWeekday = selectedDate ? getWeekday(selectedDate) : null;
+  
+  // Check if selected day has no data
+  const hasNoData = selectedDate && !currentDayData?.workouts?.length && !currentDayData?.meals?.length;
 
   const getWorkoutIcon = (type: string) => {
     if (type.toLowerCase().includes('run')) return 'walk';
@@ -117,6 +120,27 @@ export default function CalendarPage() {
 
         {/* Calendar Grid - 7-column layout */}
         <View className="mb-6" style={{ minHeight: '60%' }}>
+          {/* Weekday Labels at Top - Increased font size */}
+          <View className="flex-row justify-around mb-3">
+            {weekdays.map((weekday) => {
+              const isSelectedWeekday = selectedWeekday === weekday;
+              return (
+                <View key={weekday} className="w-[14.28%] items-center">
+                  <Text
+                    className={`text-sm font-semibold ${
+                      isSelectedWeekday
+                        ? 'text-black underline'
+                        : 'text-gray-500'
+                    }`}
+                  >
+                    {weekday}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+          
+          {/* Calendar Dates */}
           <View className="flex-row flex-wrap">
             {calendarDays.map((day, index) => {
               if (day === null) {
@@ -126,13 +150,12 @@ export default function CalendarPage() {
               const hasData = dayData[day];
               const isSelected = selectedDate === day;
               const isCurrentDay = day === currentDay;
-              const weekdayIndex = getWeekdayIndex(day);
               
               return (
                 <View key={day} className="w-[14.28%] items-center mb-4">
                   <TouchableOpacity
                     onPress={() => handleDatePress(day)}
-                    className={`w-14 h-14 rounded-full items-center justify-center mb-1 ${
+                    className={`w-14 h-14 rounded-full items-center justify-center ${
                       isSelected
                         ? 'bg-teal-500'
                         : hasData
@@ -152,26 +175,6 @@ export default function CalendarPage() {
                       {day}
                     </Text>
                   </TouchableOpacity>
-                </View>
-              );
-            })}
-          </View>
-          
-          {/* Weekday Labels at Bottom - Aligned with columns */}
-          <View className="flex-row justify-around mt-2">
-            {weekdays.map((weekday) => {
-              const isSelectedWeekday = selectedWeekday === weekday;
-              return (
-                <View key={weekday} className="w-[14.28%] items-center">
-                  <Text
-                    className={`text-xs ${
-                      isSelectedWeekday
-                        ? 'text-black font-bold underline'
-                        : 'text-gray-500'
-                    }`}
-                  >
-                    {weekday}
-                  </Text>
                 </View>
               );
             })}
@@ -219,6 +222,15 @@ export default function CalendarPage() {
             </View>
 
             <ScrollView className="px-6 pb-6" showsVerticalScrollIndicator={false}>
+              {/* Empty State */}
+              {hasNoData && (
+                <View className="py-12 items-center">
+                  <Text className="text-base text-gray-400" style={{ color: '#9ca3af' }}>
+                    No activity for the day.
+                  </Text>
+                </View>
+              )}
+
               {/* Workouts Section - Editable */}
               {currentDayData?.workouts && currentDayData.workouts.length > 0 && (
                 <View className="mb-6">
@@ -276,7 +288,7 @@ export default function CalendarPage() {
                 </View>
               )}
 
-              {/* Meals Section - Horizontal Carousel, Editable */}
+              {/* Meals Section - Horizontal Carousel, Editable, Uniform Height */}
               {currentDayData?.meals && currentDayData.meals.length > 0 && (
                 <View className="mb-6">
                   <Text className="text-lg font-bold text-gray-900 mb-3">Meals</Text>
@@ -292,10 +304,11 @@ export default function CalendarPage() {
                           }}
                         >
                           <View
-                            className="mr-3 p-4 rounded-2xl"
+                            className="mr-3 rounded-2xl"
                             style={{ 
                               backgroundColor: mealConfig.bgColor,
                               width: 140,
+                              height: 180, // Uniform height for all cards
                               shadowColor: '#000', 
                               shadowOffset: { width: 0, height: 1 }, 
                               shadowOpacity: 0.1, 
@@ -303,26 +316,28 @@ export default function CalendarPage() {
                               elevation: 2 
                             }}
                           >
-                            <View className="items-center mb-2">
-                              <View 
-                                className="w-12 h-12 rounded-full items-center justify-center mb-2"
-                                style={{ backgroundColor: mealConfig.color + '20' }}
-                              >
-                                <Ionicons 
-                                  name={mealIcons[meal.mealType] as any || 'restaurant'} 
-                                  size={24} 
-                                  color={mealConfig.color} 
-                                />
+                            <View className="p-4 h-full justify-between">
+                              <View className="items-center">
+                                <View 
+                                  className="w-12 h-12 rounded-full items-center justify-center mb-2"
+                                  style={{ backgroundColor: mealConfig.color + '20' }}
+                                >
+                                  <Ionicons 
+                                    name={mealIcons[meal.mealType] as any || 'restaurant'} 
+                                    size={24} 
+                                    color={mealConfig.color} 
+                                  />
+                                </View>
+                                <Text className="text-xs font-semibold text-gray-600 uppercase mb-1">
+                                  {meal.mealType}
+                                </Text>
+                                <Text className="text-sm font-bold text-gray-900 text-center mb-1" numberOfLines={2}>
+                                  {meal.name}
+                                </Text>
+                                <Text className="text-xs text-gray-600">
+                                  {meal.calories} kcal
+                                </Text>
                               </View>
-                              <Text className="text-xs font-semibold text-gray-600 uppercase mb-1">
-                                {meal.mealType}
-                              </Text>
-                              <Text className="text-sm font-bold text-gray-900 text-center">
-                                {meal.name}
-                              </Text>
-                              <Text className="text-xs text-gray-600 mt-1">
-                                {meal.calories} kcal
-                              </Text>
                             </View>
                           </View>
                         </TouchableOpacity>

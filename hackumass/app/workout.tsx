@@ -151,13 +151,14 @@ export default function WorkoutPage() {
       key={workout.id}
       onLongPress={() => handleLongPress(workout.id)}
       activeOpacity={0.7}
+      style={{ marginBottom: 16 }} // Increased vertical spacing
     >
       <Card
-        className="mb-3 p-5 rounded-2xl"
+        className="p-5 rounded-2xl"
         style={{ 
           backgroundColor: getWorkoutBgColor(workout.type),
           opacity: isCompleted ? 0.6 : 1,
-          minHeight: 96, // Minimum height as specified
+          minHeight: 140, // Taller containers
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
@@ -165,60 +166,62 @@ export default function WorkoutPage() {
           elevation: 3,
         }}
       >
-        <View className="flex-row items-center">
-          {/* Left Icon */}
-          <View
-            className="w-16 h-16 rounded-full items-center justify-center mr-4"
-            style={{ backgroundColor: getWorkoutColor(workout.type) + '20' }}
-          >
-            <Ionicons
-              name={getWorkoutIcon(workout.type) as any}
-              size={32}
-              color={getWorkoutColor(workout.type)}
-            />
+        <View className="flex-col">
+          {/* Top Section: Icon, Name, Details, Calories */}
+          <View className="flex-row items-start mb-4">
+            {/* Left Icon */}
+            <View
+              className="w-16 h-16 rounded-full items-center justify-center mr-4"
+              style={{ backgroundColor: getWorkoutColor(workout.type) + '20' }}
+            >
+              <Ionicons
+                name={getWorkoutIcon(workout.type) as any}
+                size={32}
+                color={getWorkoutColor(workout.type)}
+              />
+            </View>
+
+            {/* Center Content */}
+            <View className="flex-1">
+              <View className="flex-row items-center mb-1">
+                <Text className={`text-lg font-bold text-gray-900 mr-2 ${
+                  isCompleted ? 'line-through' : ''
+                }`}>
+                  {workout.type}
+                </Text>
+                {isCompleted && (
+                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                )}
+              </View>
+              <Text className="text-sm text-gray-600 mb-2">
+                {workout.duration} min
+                {workout.distance && ` • ${workout.distance} km`}
+              </Text>
+              <View className="flex-row items-center">
+                <Ionicons name="flame" size={16} color="#f97316" />
+                <Text className="text-base font-bold text-gray-900 ml-1">
+                  {workout.calories} kcal
+                </Text>
+              </View>
+            </View>
           </View>
 
-          {/* Center Content */}
-          <View className="flex-1">
-            <View className="flex-row items-center mb-1">
-              <Text className={`text-lg font-bold text-gray-900 mr-2 ${
-                isCompleted ? 'line-through' : ''
-              }`}>
-                {workout.type}
-              </Text>
-              {isCompleted && (
-                <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-              )}
-            </View>
-            <Text className="text-sm text-gray-600">
-              {workout.duration} min
-              {workout.distance && ` • ${workout.distance} km`}
-            </Text>
-          </View>
-
-          {/* Right: Calories and Mark Complete */}
-          <View className="items-end mr-2">
-            <View className="flex-row items-center mb-3">
-              <Ionicons name="flame" size={16} color="#f97316" />
-              <Text className="text-base font-bold text-gray-900 ml-1">
-                {workout.calories} kcal
-              </Text>
-            </View>
-            {!isCompleted ? (
-              <TouchableOpacity
-                onPress={() => handleMarkComplete(workout.id)}
-                className="px-4 py-2 bg-teal-500 rounded-lg"
-              >
-                <Text className="text-white font-semibold text-sm">Mark Complete</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={() => handleEdit(workout.id)}
-              >
-                <Ionicons name="create-outline" size={20} color="#6b7280" />
-              </TouchableOpacity>
-            )}
-          </View>
+          {/* Bottom Section: Mark Complete Button */}
+          {!isCompleted ? (
+            <TouchableOpacity
+              onPress={() => handleMarkComplete(workout.id)}
+              className="w-full py-3 bg-teal-500 rounded-lg items-center mt-2"
+            >
+              <Text className="text-white font-semibold text-base">Mark Complete</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={() => handleEdit(workout.id)}
+              className="w-full py-3 bg-gray-100 rounded-lg items-center mt-2"
+            >
+              <Text className="text-gray-700 font-semibold text-base">Edit</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </Card>
     </TouchableOpacity>
@@ -255,10 +258,10 @@ export default function WorkoutPage() {
           </View>
         )}
 
-        {/* Completed Today Section - Only show if there are completed workouts */}
+        {/* Completed Workouts Section - Only show if there are completed workouts */}
         {completedWorkouts.length > 0 && (
           <View className="mb-6">
-            <Text className="text-xl font-bold text-gray-900 mb-3">Completed Today</Text>
+            <Text className="text-xl font-bold text-gray-900 mb-3">Completed Workouts</Text>
             {completedWorkouts.map(workout => renderWorkoutCard(workout, true))}
           </View>
         )}
