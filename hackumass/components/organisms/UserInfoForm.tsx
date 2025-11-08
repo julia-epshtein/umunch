@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Modal, TouchableOpacity, TextInput } from 'react-native';
 import { FormField } from '../molecules/FormField';
 import { DatePicker } from '../atoms/DatePicker';
 import { RadioButton } from '../atoms/RadioButton';
@@ -111,14 +111,24 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
             <Text className="text-base text-gray-600 mb-6">
               This helps us personalize your experience
             </Text>
-            <TouchableOpacity
-              onPress={() => setShowHeightPicker(true)}
-              className="bg-gray-50 border border-gray-300 rounded-xl px-4 py-4 mb-4"
-            >
-              <Text className="text-base text-gray-900">
-                {formData.heightFeet}' {formData.heightInches}"
-              </Text>
-            </TouchableOpacity>
+            <View className="flex-row items-center">
+              <TouchableOpacity
+                onPress={() => setShowHeightPicker(true)}
+                className="flex-1 bg-gray-50 border border-gray-300 rounded-xl px-4 py-4 mr-2"
+              >
+                <Text className="text-base text-gray-900">
+                  {formData.heightFeet}' {formData.heightInches}"
+                </Text>
+              </TouchableOpacity>
+              <View className="flex-row">
+                <View className="px-3 py-4 bg-gray-100 rounded-xl mr-1">
+                  <Text className="text-sm font-medium text-gray-700">ft</Text>
+                </View>
+                <View className="px-3 py-4 bg-gray-100 rounded-xl">
+                  <Text className="text-sm font-medium text-gray-700">in</Text>
+                </View>
+              </View>
+            </View>
           </View>
         );
 
@@ -131,14 +141,20 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
             <Text className="text-base text-gray-600 mb-6">
               Enter your current weight
             </Text>
-            <FormField
-              label="Weight"
-              value={formData.weight}
-              onChangeText={(text) => setFormData({ ...formData, weight: text })}
-              placeholder="e.g., 150 lbs or 68 kg"
-              required
-              keyboardType="numeric"
-            />
+            <View className="flex-row items-center">
+              <View className="flex-1 mr-2">
+                <TextInput
+                  value={formData.weight}
+                  onChangeText={(text) => setFormData({ ...formData, weight: text })}
+                  placeholder="e.g., 150"
+                  keyboardType="numeric"
+                  className="bg-gray-50 border border-gray-300 rounded-xl px-4 py-4 text-gray-900"
+                />
+              </View>
+              <View className="px-4 py-4 bg-gray-100 rounded-xl">
+                <Text className="text-sm font-medium text-gray-700">lb</Text>
+              </View>
+            </View>
           </View>
         );
 

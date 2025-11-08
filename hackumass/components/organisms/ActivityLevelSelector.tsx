@@ -1,15 +1,34 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { Dropdown } from '../molecules/Dropdown';
 import { Button } from '../atoms/Button';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 const activityLevels = [
-  'Sedentary',
-  'Lightly Active',
-  'Moderate Exercise',
-  'Very Active',
+  { 
+    id: 'notVeryActive', 
+    title: 'Not very active', 
+    subtitle: 'Spend most of the day sitting (e.g., desk job).',
+    icon: 'desktop'
+  },
+  { 
+    id: 'lightlyActive', 
+    title: 'Lightly active', 
+    subtitle: 'Spend a good part of the day on your feet (e.g., teacher, retail).',
+    icon: 'walk'
+  },
+  { 
+    id: 'active', 
+    title: 'Active', 
+    subtitle: 'Spend a good part of the day doing physical activity.',
+    icon: 'bicycle'
+  },
+  { 
+    id: 'veryActive', 
+    title: 'Very active', 
+    subtitle: 'Spend most of the day doing heavy physical activity.',
+    icon: 'fitness'
+  },
 ];
 
 export const ActivityLevelSelector: React.FC<{ 
@@ -18,11 +37,11 @@ export const ActivityLevelSelector: React.FC<{
   onSkip?: () => void;
 }> = ({ onNext, onBack, onSkip }) => {
   const router = useRouter();
-  const [activityLevel, setActivityLevel] = useState<string | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
 
   const handleNext = () => {
-    if (activityLevel) {
-      onNext(activityLevel);
+    if (selectedLevel) {
+      onNext(selectedLevel);
     }
   };
 
@@ -42,7 +61,7 @@ export const ActivityLevelSelector: React.FC<{
     }
   };
 
-  const canProceed = () => activityLevel !== null;
+  const canProceed = () => selectedLevel !== null;
 
   return (
     <View className="flex-1 bg-white">
@@ -55,13 +74,48 @@ export const ActivityLevelSelector: React.FC<{
             This helps us calculate your calorie needs
           </Text>
 
-          <Dropdown
-            label="Activity Level"
-            options={activityLevels}
-            value={activityLevel}
-            onSelect={setActivityLevel}
-            placeholder="Select your activity level"
-          />
+          <View className="mb-6">
+            {activityLevels.map((level) => (
+              <TouchableOpacity
+                key={level.id}
+                onPress={() => setSelectedLevel(level.id)}
+                className="mb-3 p-4 border-2 rounded-xl"
+                style={{
+                  borderColor: selectedLevel === level.id ? '#14b8a6' : '#e5e7eb',
+                  backgroundColor: selectedLevel === level.id ? '#f0fdfa' : 'white',
+                }}
+              >
+                <View className="flex-row items-start">
+                  <View className="w-6 h-6 rounded-full border-2 items-center justify-center mr-3 mt-0.5"
+                    style={{
+                      borderColor: selectedLevel === level.id ? '#14b8a6' : '#d1d5db',
+                      backgroundColor: selectedLevel === level.id ? '#14b8a6' : 'white',
+                    }}
+                  >
+                    {selectedLevel === level.id && (
+                      <View className="w-2 h-2 rounded-full bg-white" />
+                    )}
+                  </View>
+                  <View className="flex-1">
+                    <View className="flex-row items-center mb-1">
+                      <Ionicons 
+                        name={level.icon as any} 
+                        size={20} 
+                        color={selectedLevel === level.id ? '#14b8a6' : '#9ca3af'} 
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text className="text-base font-semibold text-gray-900">
+                        {level.title}
+                      </Text>
+                    </View>
+                    <Text className="text-sm text-gray-600 ml-7">
+                      {level.subtitle}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </ScrollView>
 
