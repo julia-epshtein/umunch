@@ -16,7 +16,7 @@ export default function MealPage() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const diningHalls = ['Berkshire', 'Worcester', 'Franklin', 'Hampshire', 'Grab N Go', 'Other'];
+  const diningHalls = ['Berkshire', 'Worcester', 'Franklin', 'Hampshire', 'Grab N Go', 'Insomnia Cookies', 'Other'];
 
   const aiSuggestions = [
     { name: 'Grilled Chicken Salad', ingredients: ['Chicken', 'Lettuce', 'Tomatoes', 'Cucumber'], calories: 320, image: null },
