@@ -6,7 +6,9 @@ import { useRouter } from 'expo-router';
 export default function DietaryRestrictionsPage() {
   const router = useRouter();
 
-  const handleNext = (data: any) => {
+  const handleNext = (data: { dietaryRestrictions: string[]; allergies: string[]; otherAllergy?: string }) => {
+    // Store data (in production, use context or state management)
+    console.log('Dietary data:', data);
     router.push('/goals');
   };
 

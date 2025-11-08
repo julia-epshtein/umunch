@@ -4,6 +4,7 @@ import { FormField } from '../molecules/FormField';
 import { DatePicker } from '../atoms/DatePicker';
 import { RadioButton } from '../atoms/RadioButton';
 import { ProgressBar } from '../molecules/ProgressBar';
+import { Button } from '../atoms/Button';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -182,40 +183,50 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
     >
       <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-6 pt-8 pb-24">
+        <View className="px-6 pt-8 pb-32">
           {renderStepContent()}
         </View>
       </ScrollView>
 
       {/* Navigation buttons at bottom */}
-      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4 flex-row justify-between items-center">
-        <TouchableOpacity
-          onPress={handleBack}
-          className="w-12 h-12 items-center justify-center"
-        >
-          <Ionicons name="arrow-back" size={24} color={step > 1 ? "#374151" : "#9ca3af"} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          onPress={handleSkip}
-          className="w-12 h-12 items-center justify-center"
-        >
-          <Text className="text-gray-600 font-medium">Skip</Text>
-        </TouchableOpacity>
+      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
+        <View className="flex-row justify-between items-center mb-3">
+          <TouchableOpacity
+            onPress={handleBack}
+            className="w-12 h-12 items-center justify-center"
+          >
+            <Ionicons name="arrow-back" size={24} color={step > 1 ? "#374151" : "#9ca3af"} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            onPress={handleSkip}
+            className="px-4 py-2"
+          >
+            <Text className="text-gray-600 font-medium">Skip</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
+          <TouchableOpacity
+            onPress={handleNext}
+            disabled={!canProceed()}
+            className={`w-12 h-12 items-center justify-center rounded-full ${
+              canProceed() ? 'bg-teal-500' : 'bg-gray-300'
+            }`}
+          >
+            <Ionicons 
+              name="arrow-forward" 
+              size={24} 
+              color={canProceed() ? "white" : "#9ca3af"} 
+            />
+          </TouchableOpacity>
+        </View>
+        
+        {/* Continue Button - Primary CTA */}
+        <Button
+          title={step === internalSteps ? 'Continue' : 'Continue'}
           onPress={handleNext}
           disabled={!canProceed()}
-          className={`w-12 h-12 items-center justify-center rounded-full ${
-            canProceed() ? 'bg-teal-500' : 'bg-gray-300'
-          }`}
-        >
-          <Ionicons 
-            name="arrow-forward" 
-            size={24} 
-            color={canProceed() ? "white" : "#9ca3af"} 
-          />
-        </TouchableOpacity>
+          className="w-full"
+        />
       </View>
 
       {/* Height Picker Modal - iOS Style Scroll Wheel */}

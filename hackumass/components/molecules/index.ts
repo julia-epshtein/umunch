@@ -7,4 +7,5 @@ export { GoalCard } from './GoalCard';
 export { DiningHallButton } from './DiningHallButton';
 export { DonutChart } from './DonutChart';
 export { TripleDonutChart } from './TripleDonutChart';
+export { NestedDonutChart } from './NestedDonutChart';
 export { ProgressBar } from './ProgressBar';

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { DiningHallButton } from '../molecules/DiningHallButton';
 import { Input } from '../atoms/Input';
+import { Button } from '../atoms/Button';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -42,7 +43,7 @@ export const DiningHallSelector: React.FC<{
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-6 pt-12 pb-24">
+        <View className="px-6 pt-12 pb-32">
           <Text className="text-4xl font-bold text-gray-900 mb-2">
             Which dining hall do you prefer?
           </Text>
@@ -72,29 +73,39 @@ export const DiningHallSelector: React.FC<{
       </ScrollView>
 
       {/* Navigation buttons at bottom */}
-      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4 flex-row justify-between items-center">
-        <TouchableOpacity
-          onPress={handleBack}
-          className="w-12 h-12 items-center justify-center"
-        >
-          <Ionicons name="arrow-back" size={24} color="#374151" />
-        </TouchableOpacity>
-        
-        <View className="w-12" />
+      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
+        <View className="flex-row justify-between items-center mb-3">
+          <TouchableOpacity
+            onPress={handleBack}
+            className="w-12 h-12 items-center justify-center"
+          >
+            <Ionicons name="arrow-back" size={24} color="#374151" />
+          </TouchableOpacity>
+          
+          <View className="w-12" />
 
-        <TouchableOpacity
+          <TouchableOpacity
+            onPress={handleNext}
+            disabled={!canProceed()}
+            className={`w-12 h-12 items-center justify-center rounded-full ${
+              canProceed() ? 'bg-teal-500' : 'bg-gray-300'
+            }`}
+          >
+            <Ionicons 
+              name="arrow-forward" 
+              size={24} 
+              color={canProceed() ? "white" : "#9ca3af"} 
+            />
+          </TouchableOpacity>
+        </View>
+        
+        {/* Continue Button - Primary CTA */}
+        <Button
+          title="Complete Setup"
           onPress={handleNext}
           disabled={!canProceed()}
-          className={`w-12 h-12 items-center justify-center rounded-full ${
-            canProceed() ? 'bg-teal-500' : 'bg-gray-300'
-          }`}
-        >
-          <Ionicons 
-            name="arrow-forward" 
-            size={24} 
-            color={canProceed() ? "white" : "#9ca3af"} 
-          />
-        </TouchableOpacity>
+          className="w-full"
+        />
       </View>
     </View>
   );

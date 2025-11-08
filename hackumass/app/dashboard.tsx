@@ -2,7 +2,7 @@ import { SafeAreaView, View, Text, ScrollView, TouchableOpacity } from 'react-na
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { Card } from '../components/molecules/Card';
 import { MealTracker } from '../components/organisms/MealTracker';
-import { DonutChart, TripleDonutChart } from '../components/molecules';
+import { DonutChart, NestedDonutChart } from '../components/molecules';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -51,13 +51,14 @@ export default function DashboardPage() {
           </View>
         </Card>
 
-        {/* Macros Section */}
+        {/* Macros Section - Nested Donut Chart */}
         <Card className="mb-4 bg-pink-50">
           <Text className="text-xl font-bold text-gray-900 mb-4">Macros</Text>
-          <TripleDonutChart
+          <NestedDonutChart
             carbs={macros.carbs}
             protein={macros.protein}
             fat={macros.fat}
+            size={200}
           />
         </Card>
 
