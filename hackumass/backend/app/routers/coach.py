@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from ..db import fetch_all
 from ..gemini_client import ask_umunch
+from ..food_image_service import get_food_image_service
 
 router = APIRouter()
 
@@ -38,9 +39,26 @@ def coach(req: CoachRequest):
         (snapshot["USER_ID"],),
     )
 
+    # Enhance menus with image information
+    image_service = get_food_image_service()
+    enhanced_menus = []
+    
+    for menu in menus:
+        menu_dict = dict(menu)
+        food_name = menu_dict.get('ITEM_NAME')
+        if food_name:
+            image_info = image_service.get_food_image(food_name)
+            menu_dict['has_image'] = image_info is not None
+            if image_info:
+                menu_dict['matched_food_name'] = image_info.get('matched_name')
+        enhanced_menus.append(menu_dict)
+
     # generate Gemini response
     try:
-        answer = ask_umunch(snapshot, menus, req.question)
-        return {"answer": answer}
+        answer = ask_umunch(snapshot, enhanced_menus, req.question)
+        return {
+            "answer": answer,
+            "menu_items": enhanced_menus  # Include enhanced menu data for frontend
+        }
     except Exception as e:
         return {"error": str(e)}

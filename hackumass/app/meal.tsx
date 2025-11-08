@@ -1,11 +1,50 @@
-import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, Animated, Image, TextInput } from 'react-native';
+import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, Animated, Image, TextInput, ActivityIndicator } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { DiningHallButton } from '../components/molecules/DiningHallButton';
 import { SearchBar } from '../components/molecules/SearchBar';
 import { Card } from '../components/molecules/Card';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Platform } from 'react-native';
+
+// API Configuration
+// Use localhost for web, 10.0.2.2 for Android emulator, or your computer's IP for physical device/iOS simulator
+const getApiBaseUrl = () => {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:8000';
+  }
+  
+  // For Android emulator, use 10.0.2.2 instead of localhost
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:8000';
+  }
+  
+  // For iOS simulator or physical device, use your computer's local IP from environment
+  // Fallback to hardcoded IP if environment variable is not set
+  const apiHost = process.env.EXPO_PUBLIC_API_HOST;
+  const apiPort = process.env.EXPO_PUBLIC_API_PORT || '8000';
+  return `http://${apiHost}:${apiPort}`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+interface MenuItem {
+  menu_item_id: number;
+  name: string;
+  kcal: number;
+  protein_g: number;
+  carb_g: number;
+  fat_g: number;
+  hall_name: string;
+  hall_code: string;
+  has_image: boolean;
+  matched_food_name?: string;
+  match_score?: number;
+  image_url?: string;
+  calories?: number; // Alias for kcal
+  ingredients?: string[]; // Additional field
+}
 
 export default function MealPage() {
   const router = useRouter();
@@ -15,26 +54,157 @@ export default function MealPage() {
   const [selectedMeal, setSelectedMeal] = useState<any>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [loadingMenu, setLoadingMenu] = useState(false);
+  const [imageCache, setImageCache] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  const diningHalls = ['Berkshire', 'Worcester', 'Franklin', 'Hampshire', 'Grab N Go', 'Insomnia Cookies', 'Other'];
+  // UMass Dining Halls - matching what students expect
+  const diningHalls = ['Berkshire', 'Worcester', 'Frank', 'Hampshire'];
 
-  const aiSuggestions = [
-    { name: 'Grilled Chicken Salad', ingredients: ['Chicken', 'Lettuce', 'Tomatoes', 'Cucumber'], calories: 320, image: null },
-    { name: 'Quinoa Bowl', ingredients: ['Quinoa', 'Black Beans', 'Avocado', 'Corn'], calories: 450, image: null },
-    { name: 'Greek Yogurt Parfait', ingredients: ['Yogurt', 'Berries', 'Granola', 'Honey'], calories: 280, image: null },
-    { name: 'Veggie Wrap', ingredients: ['Tortilla', 'Hummus', 'Vegetables'], calories: 380, image: null },
-    { name: 'Caesar Salad', ingredients: ['Romaine', 'Caesar Dressing', 'Croutons'], calories: 250, image: null },
-    { name: 'Pasta Primavera', ingredients: ['Pasta', 'Mixed Vegetables', 'Olive Oil'], calories: 420, image: null },
-  ];
+  // Static AI suggestions - fetch images on mount
+  const [aiSuggestions, setAiSuggestions] = useState([
+    { name: 'Grilled Chicken Salad', calories: 320, image_url: null },
+    { name: 'Quinoa Bowl', calories: 450, image_url: null },
+    { name: 'Greek Yogurt Parfait', calories: 280, image_url: null },
+    { name: 'Veggie Wrap', calories: 380, image_url: null },
+    { name: 'Caesar Salad', calories: 250, image_url: null },
+    { name: 'Pasta Primavera', calories: 420, image_url: null },
+  ]);
 
-  const mealList = [
-    { name: 'Caesar Salad', ingredients: ['Romaine', 'Caesar Dressing', 'Croutons', 'Parmesan'], calories: 250, image: null },
-    { name: 'Pasta Primavera', ingredients: ['Pasta', 'Mixed Vegetables', 'Olive Oil'], calories: 420, image: null },
-    { name: 'Grilled Salmon', ingredients: ['Salmon', 'Lemon', 'Herbs'], calories: 350, image: null },
-    { name: 'Chicken Teriyaki', ingredients: ['Chicken', 'Rice', 'Vegetables', 'Teriyaki Sauce'], calories: 480, image: null },
-    { name: 'Vegetable Stir Fry', ingredients: ['Mixed Vegetables', 'Soy Sauce', 'Ginger'], calories: 320, image: null },
-    { name: 'Beef Burger', ingredients: ['Beef Patty', 'Bun', 'Lettuce', 'Tomato'], calories: 550, image: null },
-  ];
+  // Fetch images for AI suggestions on mount
+  useEffect(() => {
+    const fetchAiImages = async () => {
+      const suggestionsWithImages = await Promise.all(
+        aiSuggestions.map(async (suggestion) => {
+          const imageUrl = await fetchFoodImage(suggestion.name);
+          return { ...suggestion, image_url: imageUrl };
+        })
+      );
+      setAiSuggestions(suggestionsWithImages);
+    };
+    
+    fetchAiImages();
+  }, []); // Run once on mount
+
+  // Fetch menu items when dining hall is selected
+  useEffect(() => {
+    if (selectedHall && step === 2) {
+      fetchMenuItems(selectedHall);
+    }
+  }, [selectedHall, step]);
+
+  // Fetch food image for a specific meal
+  const fetchFoodImage = async (foodName: string): Promise<string | null> => {
+    // Check cache first
+    if (imageCache[foodName]) {
+      return imageCache[foodName];
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/meals/image/${encodeURIComponent(foodName)}`
+      );
+      const data = await response.json();
+      
+      if (data.has_image && data.image_url) {
+        setImageCache(prev => ({ ...prev, [foodName]: data.image_url }));
+        return data.image_url;
+      }
+    } catch (error) {
+      console.error('Error fetching food image:', error);
+    }
+    
+    return null;
+  };
+
+  // Fetch menu items from API
+  const fetchMenuItems = async (hallName: string) => {
+    setLoadingMenu(true);
+    setApiError(null);
+    try {
+      console.log('Fetching menu from:', API_BASE_URL);
+      
+      // Map display names to hall codes
+      const hallCodeMap: Record<string, string> = {
+        'Berkshire': 'BERKSHIRE',
+        'Worcester': 'WORCESTER',
+        'Frank': 'FRANKLIN',
+        'Hampshire': 'HAMPSHIRE',
+      };
+
+      const hallCode = hallCodeMap[hallName];
+      
+      if (!hallCode) {
+        console.log(`No hall code mapping for ${hallName}, using mock data`);
+        setMenuItems([]);
+        setLoadingMenu(false);
+        return;
+      }
+
+      const url = `${API_BASE_URL}/meals/menu?dining_hall_code=${hallCode}`;
+      console.log('Fetching from URL:', url);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const items = data.menu_items || [];
+      
+      console.log(`Fetched ${items.length} menu items`);
+      
+      // Fetch all images in one batch request
+      const foodNames = items.map((item: MenuItem) => item.name);
+      let imageResults: Record<string, any> = {};
+      
+      try {
+        const imageResponse = await fetch(`${API_BASE_URL}/meals/images/batch`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(foodNames),
+        });
+        
+        if (imageResponse.ok) {
+          imageResults = await imageResponse.json();
+          // Update cache
+          setImageCache(prev => ({ ...prev, ...Object.fromEntries(
+            Object.entries(imageResults).map(([name, data]: [string, any]) => [name, data.image_url])
+          )}));
+        }
+      } catch (error) {
+        console.error('Error fetching images:', error);
+      }
+      
+      // Combine menu items with images
+      const itemsWithImages = items.map((item: MenuItem) => {
+        const imageData = imageResults[item.name];
+        return {
+          ...item,
+          image_url: imageData?.image_url || null,
+          ingredients: ['View details for nutrition info'], // Placeholder
+          calories: Math.round(item.kcal),
+        };
+      });
+
+      setMenuItems(itemsWithImages);
+    } catch (error) {
+      console.error('Error fetching menu:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setApiError(errorMessage);
+      // Fallback to empty array if API fails
+      setMenuItems([]);
+    } finally {
+      setLoadingMenu(false);
+    }
+  };
+
+  // All menu items from API go to "Available Meals"
+  // AI suggestions are static and independent
 
   const handleStep1Next = () => {
     if (selectedHall) {
@@ -176,16 +346,67 @@ export default function MealPage() {
               </TouchableOpacity>
             </View>
 
-            {/* AI Suggestions Section - Horizontal Carousel */}
-            <View className="mb-6">
-              <Text className="text-xl font-bold text-gray-900 mb-3">AI Suggestions</Text>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                snapToInterval={180}
-                decelerationRate="fast"
-                contentContainerStyle={{ paddingRight: 24 }}
-              >
+            {/* Loading Indicator */}
+            {loadingMenu && (
+              <View className="py-12 items-center">
+                <ActivityIndicator size="large" color="#14b8a6" />
+                <Text className="text-gray-600 mt-4">Loading menu items...</Text>
+              </View>
+            )}
+
+            {/* Error Message */}
+            {!loadingMenu && apiError && (
+              <View className="py-12 px-6 items-center">
+                <View className="bg-red-50 rounded-2xl p-6 w-full">
+                  <Ionicons name="alert-circle" size={48} color="#dc2626" style={{ alignSelf: 'center', marginBottom: 12 }} />
+                  <Text className="text-lg font-bold text-red-900 text-center mb-2">
+                    Connection Error
+                  </Text>
+                  <Text className="text-sm text-red-700 text-center mb-4">
+                    {apiError}
+                  </Text>
+                  <Text className="text-xs text-red-600 text-center mb-4">
+                    API URL: {API_BASE_URL}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => selectedHall && fetchMenuItems(selectedHall)}
+                    className="bg-red-600 py-3 px-6 rounded-xl items-center"
+                  >
+                    <Text className="text-white font-semibold">Try Again</Text>
+                  </TouchableOpacity>
+                  <Text className="text-xs text-gray-500 text-center mt-4">
+                    Make sure your backend is running on {API_BASE_URL}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Show content only when not loading */}
+            {!loadingMenu && !apiError && (
+              <>
+                {menuItems.length === 0 ? (
+                  <View className="py-12 items-center">
+                    <Ionicons name="restaurant-outline" size={64} color="#d1d5db" />
+                    <Text className="text-gray-600 mt-4 text-center">
+                      No menu items available for {selectedHall}
+                    </Text>
+                    <Text className="text-gray-400 mt-2 text-center text-sm">
+                      Try selecting a different dining hall
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    {/* AI Suggestions Section - Horizontal Carousel */}
+                    {aiSuggestions.length > 0 && (
+                      <View className="mb-6">
+                        <Text className="text-xl font-bold text-gray-900 mb-3">AI Suggestions</Text>
+                        <ScrollView 
+                          horizontal 
+                          showsHorizontalScrollIndicator={false}
+                          snapToInterval={180}
+                          decelerationRate="fast"
+                          contentContainerStyle={{ paddingRight: 24 }}
+                        >
                 {aiSuggestions.map((suggestion, index) => {
                   const bgColors = ['#fff7ed', '#eff6ff', '#f5f3ff', '#fefce8', '#f0fdfa', '#fdf2f8'];
                   const bgColor = bgColors[index % bgColors.length];
@@ -223,8 +444,8 @@ export default function MealPage() {
 
                         {/* Image Placeholder - Centered */}
                         <View className="w-full h-32 bg-gray-200 items-center justify-center">
-                          {suggestion.image ? (
-                            <Image source={{ uri: suggestion.image }} className="w-full h-full" />
+                          {suggestion.image_url ? (
+                            <Image source={{ uri: suggestion.image_url }} className="w-full h-full" resizeMode="cover" />
                           ) : (
                             <Ionicons name="restaurant" size={48} color="#9ca3af" />
                           )}
@@ -242,12 +463,14 @@ export default function MealPage() {
                 })}
               </ScrollView>
             </View>
+            )}
 
-            {/* Available Meals - 2 Column Grid */}
+            {/* Available Meals - 2 Column Grid - Show ALL items from API */}
+            {!loadingMenu && menuItems.length > 0 && (
             <View className="mb-6">
               <Text className="text-xl font-bold text-gray-900 mb-3">Available Meals</Text>
               <View className="flex-row flex-wrap justify-between">
-                {mealList.map((meal, index) => {
+                {menuItems.map((meal, index) => {
                   const bgColors = ['#fff7ed', '#eff6ff', '#f5f3ff', '#fefce8', '#f0fdfa', '#fdf2f8'];
                   const bgColor = bgColors[index % bgColors.length];
                   
@@ -279,8 +502,8 @@ export default function MealPage() {
 
                         {/* Image Placeholder */}
                         <View className="w-full h-32 bg-gray-200 items-center justify-center">
-                          {meal.image ? (
-                            <Image source={{ uri: meal.image }} className="w-full h-full" />
+                          {meal.image_url ? (
+                            <Image source={{ uri: meal.image_url }} className="w-full h-full" resizeMode="cover" />
                           ) : (
                             <Ionicons name="restaurant" size={40} color="#9ca3af" />
                           )}
@@ -292,7 +515,7 @@ export default function MealPage() {
                             {meal.name}
                           </Text>
                           <Text className="text-xs text-gray-600" numberOfLines={2}>
-                            {meal.ingredients.join(', ')}
+                            {meal.ingredients ? meal.ingredients.join(', ') : 'View details'}
                           </Text>
                         </View>
                       </View>
@@ -301,6 +524,11 @@ export default function MealPage() {
                 })}
               </View>
             </View>
+            )}
+                  </>
+                )}
+              </>
+            )}
           </View>
         )}
 

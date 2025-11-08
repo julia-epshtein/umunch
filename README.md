@@ -152,17 +152,79 @@ SNOWFLAKE_USER=your_username
 SNOWFLAKE_PASSWORD=your_password
 SNOWFLAKE_DATABASE=your_database
 SNOWFLAKE_SCHEMA=your_schema
-JWT_SECRET=your_secret_key
+SNOWFLAKE_WAREHOUSE=your_warehouse
+GEMINI_API_KEY=your_gemini_key
+
+# Server configuration (update SERVER_HOST with your local IP)
+SERVER_HOST=0.0.0.0
+SERVER_PORT=8000
 ```
 
-5. Start the development server:
+**Finding your local IP address:**
+- macOS/Linux: Run `ifconfig | grep "inet " | grep -v 127.0.0.1`
+- Windows: Run `ipconfig` and look for IPv4 Address
+
+5. Update the frontend .env file (in `hackumass/.env`):
 ```bash
-uvicorn app.main:app --reload
+# Update with your computer's IP address
+EXPO_PUBLIC_API_HOST=your_local_ip
+EXPO_PUBLIC_API_PORT=8000
 ```
 
-The API will be available at http://localhost:8000
+5. Update the frontend .env file (in `hackumass/.env`):
+```bash
+# Update with your computer's IP address
+EXPO_PUBLIC_API_HOST=your_local_ip
+EXPO_PUBLIC_API_PORT=8000
+```
+
+6. Start the development server:
+```bash
+# Use the start script (automatically reads .env file)
+./start_server.sh
+```
+
+The start script will:
+- Load configuration from your .env file
+- Start the server with the configured host and port
+- Display the network URLs where your API is accessible
+
+The API will be available at:
+- **From your computer**: http://localhost:8000
+- **From network devices**: http://YOUR_IP:8000 (configured in .env)
 - API documentation: http://localhost:8000/docs
 - Alternative docs: http://localhost:8000/redoc
+
+**Note**: The IP address is now configured in the .env files for both backend and frontend. Update these files when your IP address changes.
+
+### Food Image Integration
+
+The backend integrates with the [Hugging Face MM-Food-100K dataset](https://huggingface.co/datasets/Codatta/MM-Food-100K) to provide images for menu items.
+
+**Testing the integration:**
+```bash
+cd hackumass/backend
+source venv/bin/activate  # if not already activated
+python test_food_images.py
+```
+
+**New API Endpoints:**
+
+1. **Get menu with images**:
+   ```
+   GET /meals/menu?dining_hall_code=BERKSHIRE&meal_type_code=LUNCH
+   ```
+
+2. **Get food image**:
+   ```
+   GET /meals/image/{food_name}
+   ```
+
+See `backend/FOOD_IMAGE_INTEGRATION.md` for detailed documentation on:
+- How the image matching works
+- Frontend integration examples
+- Performance optimization tips
+- Troubleshooting guide
 
 ### API Structure
 
