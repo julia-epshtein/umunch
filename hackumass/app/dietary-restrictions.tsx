@@ -11,8 +11,8 @@ export default function DietaryRestrictionsPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      <ProgressBar currentStep={2} totalSteps={6} />
+    <SafeAreaView className="flex-1 bg-white">
+      <ProgressBar currentStep={2} totalSteps={5} />
       <DietaryRestrictionsForm onNext={handleNext} />
     </SafeAreaView>
   );

@@ -12,8 +12,8 @@ export default function DiningHallPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      <ProgressBar currentStep={5} totalSteps={6} />
+    <SafeAreaView className="flex-1 bg-white">
+      <ProgressBar currentStep={5} totalSteps={5} />
       <DiningHallSelector onNext={handleNext} />
     </SafeAreaView>
   );

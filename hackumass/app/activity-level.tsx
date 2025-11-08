@@ -11,8 +11,8 @@ export default function ActivityLevelPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      <ProgressBar currentStep={4} totalSteps={6} />
+    <SafeAreaView className="flex-1 bg-white">
+      <ProgressBar currentStep={4} totalSteps={5} />
       <ActivityLevelSelector onNext={handleNext} />
     </SafeAreaView>
   );

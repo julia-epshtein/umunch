@@ -54,7 +54,7 @@ export default function CalendarPage() {
   const currentDayData = selectedDate ? dayData[selectedDate] : null;
 
   return (
-    <SafeAreaView className="flex-1 bg-pink-50">
+    <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
         <Text className="text-4xl font-bold text-gray-900 mb-2">Calendar</Text>
         <Text className="text-lg text-gray-600 mb-6">Tap a date to view or edit details</Text>
@@ -81,7 +81,7 @@ export default function CalendarPage() {
                       ? 'bg-teal-500 rounded-full'
                       : hasData
                       ? 'bg-teal-100 rounded-full'
-                      : 'bg-white rounded-full'
+                      : 'bg-white rounded-full border border-gray-200'
                   }`}
                 >
                   <Text
@@ -137,7 +137,7 @@ export default function CalendarPage() {
                 <View className="mb-6">
                   <Text className="text-lg font-bold text-gray-900 mb-3">Workouts</Text>
                   {currentDayData.workouts.map((workout, index) => (
-                    <Card key={index} className="mb-3 bg-gradient-to-r from-teal-50 to-green-50">
+                    <Card key={index} className="mb-3 bg-teal-50">
                       <View className="flex-row items-center mb-2">
                         <Ionicons name="fitness" size={20} color="#14b8a6" />
                         <Text className="text-lg font-semibold text-gray-900 ml-2">
@@ -165,7 +165,7 @@ export default function CalendarPage() {
                 <View className="mb-6">
                   <Text className="text-lg font-bold text-gray-900 mb-3">Meals</Text>
                   {currentDayData.meals.map((meal, index) => (
-                    <Card key={index} className="mb-3 bg-gradient-to-r from-orange-50 to-pink-50">
+                    <Card key={index} className="mb-3 bg-orange-50">
                       <View className="flex-row items-center mb-2">
                         <Ionicons name="restaurant" size={20} color="#f97316" />
                         <Text className="text-lg font-semibold text-gray-900 ml-2">

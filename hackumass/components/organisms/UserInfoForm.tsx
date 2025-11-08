@@ -3,9 +3,9 @@ import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Modal, Touchabl
 import { FormField } from '../molecules/FormField';
 import { DatePicker } from '../atoms/DatePicker';
 import { RadioButton } from '../atoms/RadioButton';
-import { Button } from '../atoms/Button';
 import { ProgressBar } from '../molecules/ProgressBar';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 interface UserInfoFormData {
   dateOfBirth: Date | null;
@@ -19,13 +19,16 @@ interface UserInfoFormProps {
   onNext: (data: UserInfoFormData) => void;
   currentStep?: number;
   totalSteps?: number;
+  onSkip?: () => void;
 }
 
 export const UserInfoForm: React.FC<UserInfoFormProps> = ({ 
   onNext, 
   currentStep = 1, 
-  totalSteps = 4 
+  totalSteps = 5,
+  onSkip
 }) => {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<UserInfoFormData>({
     dateOfBirth: null,
@@ -35,9 +38,10 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
     gender: '',
   });
   const [showHeightPicker, setShowHeightPicker] = useState(false);
+  const internalSteps = 4;
 
   const handleNext = () => {
-    if (step < totalSteps) {
+    if (step < internalSteps) {
       setStep(step + 1);
     } else {
       // All steps complete, proceed
@@ -50,6 +54,16 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
   const handleBack = () => {
     if (step > 1) {
       setStep(step - 1);
+    } else {
+      router.back();
+    }
+  };
+
+  const handleSkip = () => {
+    if (onSkip) {
+      onSkip();
+    } else {
+      router.push('/dietary-restrictions');
     }
   };
 
@@ -164,32 +178,45 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1"
+      className="flex-1 bg-white"
     >
-      <ProgressBar currentStep={step} totalSteps={totalSteps} />
-      <ScrollView className="flex-1 bg-pink-50" showsVerticalScrollIndicator={false}>
-        <View className="px-6 pt-8 pb-8">
+      <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <View className="px-6 pt-8 pb-24">
           {renderStepContent()}
-
-          <View className="flex-row gap-3 mt-6">
-            {step > 1 && (
-              <TouchableOpacity
-                onPress={handleBack}
-                className="flex-1 bg-gray-200 py-4 px-6 rounded-xl items-center justify-center"
-              >
-                <Text className="text-gray-700 font-semibold text-lg">Back</Text>
-              </TouchableOpacity>
-            )}
-            <Button
-              title={step === totalSteps ? 'Next' : 'Continue'}
-              onPress={handleNext}
-              disabled={!canProceed()}
-              className={step > 1 ? 'flex-1' : 'w-full'}
-            />
-          </View>
         </View>
       </ScrollView>
 
+      {/* Navigation buttons at bottom */}
+      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4 flex-row justify-between items-center">
+        <TouchableOpacity
+          onPress={handleBack}
+          className="w-12 h-12 items-center justify-center"
+        >
+          <Ionicons name="arrow-back" size={24} color={step > 1 ? "#374151" : "#9ca3af"} />
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          onPress={handleSkip}
+          className="w-12 h-12 items-center justify-center"
+        >
+          <Text className="text-gray-600 font-medium">Skip</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleNext}
+          disabled={!canProceed()}
+          className={`w-12 h-12 items-center justify-center rounded-full ${
+            canProceed() ? 'bg-teal-500' : 'bg-gray-300'
+          }`}
+        >
+          <Ionicons 
+            name="arrow-forward" 
+            size={24} 
+            color={canProceed() ? "white" : "#9ca3af"} 
+          />
+        </TouchableOpacity>
+      </View>
 
       {/* Height Picker Modal - iOS Style Scroll Wheel */}
       <Modal
@@ -263,11 +290,12 @@ export const UserInfoForm: React.FC<UserInfoFormProps> = ({
                 <Text className="text-sm text-gray-600 mt-2">in</Text>
               </View>
             </View>
-            <Button
-              title="Done"
+            <TouchableOpacity
               onPress={() => setShowHeightPicker(false)}
-              className="mt-4"
-            />
+              className="bg-teal-500 py-4 rounded-xl mt-4"
+            >
+              <Text className="text-white font-semibold text-center text-lg">Done</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

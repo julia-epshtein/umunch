@@ -14,10 +14,9 @@ export default function WorkoutPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-white">
       <WorkoutForm onSubmit={handleSubmit} />
       <BottomNavigation />
     </SafeAreaView>
   );
 }
-

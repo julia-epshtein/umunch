@@ -24,7 +24,7 @@ export const WorkoutForm: React.FC<{ onSubmit: (workout: { type: string; duratio
   };
 
   return (
-    <ScrollView className="flex-1 bg-pink-50" showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
       <View className="px-6 pt-12 pb-8">
         <Text className="text-4xl font-bold text-gray-900 mb-2">
           Add Workout
@@ -60,4 +60,3 @@ export const WorkoutForm: React.FC<{ onSubmit: (workout: { type: string; duratio
     </ScrollView>
   );
 };
-

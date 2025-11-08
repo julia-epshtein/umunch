@@ -1,7 +1,6 @@
 import { SafeAreaView, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { Card } from '../components/molecules/Card';
-import { Button } from '../components/atoms/Button';
 import { MealTracker } from '../components/organisms/MealTracker';
 import { DonutChart, TripleDonutChart } from '../components/molecules';
 import { useRouter } from 'expo-router';
@@ -22,7 +21,7 @@ export default function DashboardPage() {
   const [workout, setWorkout] = useState<{ name: string; duration: number; calories: number } | null>(null);
 
   return (
-    <SafeAreaView className="flex-1 bg-pink-50">
+    <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
         {/* One-word summary */}
         <View className="mb-6">
@@ -31,7 +30,7 @@ export default function DashboardPage() {
         </View>
 
         {/* Calories Donut Chart Section */}
-        <Card className="mb-4">
+        <Card className="mb-4 bg-teal-50">
           <Text className="text-xl font-bold text-gray-900 mb-4">Calories</Text>
           <View className="items-center">
             <DonutChart
@@ -53,7 +52,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Macros Section */}
-        <Card className="mb-4">
+        <Card className="mb-4 bg-pink-50">
           <Text className="text-xl font-bold text-gray-900 mb-4">Macros</Text>
           <TripleDonutChart
             carbs={macros.carbs}
@@ -63,7 +62,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Daily Status - Moved below Macros */}
-        <Card className="mb-4">
+        <Card className="mb-4 bg-green-50">
           <Text className="text-xl font-bold text-gray-900 mb-3">Daily Status</Text>
           <View className="flex-row justify-between">
             <View className="flex-1 mr-2">
@@ -80,7 +79,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Workout Section */}
-        <Card className="mb-4">
+        <Card className="mb-4 bg-blue-50">
           <View className="flex-row justify-between items-center mb-3">
             <Text className="text-xl font-bold text-gray-900">Workout</Text>
             <TouchableOpacity onPress={() => router.push('/workout')}>

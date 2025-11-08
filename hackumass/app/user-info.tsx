@@ -11,8 +11,8 @@ export default function UserInfoPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      <UserInfoForm onNext={handleNext} currentStep={1} totalSteps={6} />
+    <SafeAreaView className="flex-1 bg-white">
+      <UserInfoForm onNext={handleNext} currentStep={1} totalSteps={5} />
     </SafeAreaView>
   );
 }

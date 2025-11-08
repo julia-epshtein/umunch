@@ -3,25 +3,20 @@ import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { DiningHallButton } from '../components/molecules/DiningHallButton';
 import { SearchBar } from '../components/molecules/SearchBar';
 import { Card } from '../components/molecules/Card';
-import { Button } from '../components/atoms/Button';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-type MealType = 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack' | null;
-
 export default function MealPage() {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2>(1);
-  const [selectedMealType, setSelectedMealType] = useState<MealType>(null);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [selectedHall, setSelectedHall] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMeal, setSelectedMeal] = useState<any>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const diningHalls = ['Dining Hall A', 'Dining Hall B', 'Dining Hall C', 'Other'];
-  const mealTypes: MealType[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+  const diningHalls = ['Berkshire', 'Worcester', 'Franklin', 'Hampshire', 'Grab N Go', 'Other'];
 
   const aiSuggestions = [
     { name: 'Grilled Chicken Salad', ingredients: ['Chicken', 'Lettuce', 'Tomatoes', 'Cucumber'], calories: 320 },
@@ -36,27 +31,30 @@ export default function MealPage() {
     { name: 'Grilled Salmon', ingredients: ['Salmon', 'Lemon', 'Herbs'], calories: 350 },
   ];
 
-  const handleMealTypeSelect = (type: MealType) => {
-    setSelectedMealType(type);
-    setStep(2);
+  const handleStep1Next = () => {
+    if (selectedHall) {
+      setStep(2);
+    }
   };
 
   const handleMealSelect = (meal: any) => {
     setSelectedMeal(meal);
+    setStep(3);
+  };
+
+  const handleConfirmMeal = () => {
     setShowConfirmation(true);
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 300,
       useNativeDriver: true,
     }).start();
-  };
-
-  const handleConfirmMeal = () => {
+    
     // In production, save meal to state/API
     setTimeout(() => {
       setShowConfirmation(false);
       setStep(1);
-      setSelectedMealType(null);
+      setSelectedHall(null);
       setSelectedMeal(null);
       setSearchQuery('');
       router.push('/dashboard');
@@ -64,9 +62,12 @@ export default function MealPage() {
   };
 
   const handleBack = () => {
-    if (step === 2) {
+    if (step === 3) {
+      setStep(2);
+      setSelectedMeal(null);
+    } else if (step === 2) {
       setStep(1);
-      setSelectedMealType(null);
+      setSelectedHall(null);
       setSearchQuery('');
     } else {
       router.back();
@@ -74,7 +75,7 @@ export default function MealPage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-pink-50">
+    <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
         {/* Header with back button */}
         <View className="flex-row items-center mb-6">
@@ -84,46 +85,61 @@ export default function MealPage() {
           <Text className="text-4xl font-bold text-gray-900">Log Meal</Text>
         </View>
 
+        {/* Progress indicator */}
+        <View className="mb-6">
+          <Text className="text-sm text-gray-500 mb-2">
+            Step {step} of 3
+          </Text>
+          <View className="h-2 bg-gray-200 rounded-full">
+            <View 
+              className="h-full bg-teal-500 rounded-full"
+              style={{ width: `${(step / 3) * 100}%` }}
+            />
+          </View>
+        </View>
+
+        {/* Step 1: Select Dining Hall */}
         {step === 1 && (
-          <>
-            <Text className="text-lg text-gray-600 mb-6">Step 1: Select meal type</Text>
-            <View className="mb-6">
-              {mealTypes.map((type) => (
-                <TouchableOpacity
-                  key={type}
-                  onPress={() => handleMealTypeSelect(type)}
-                  className="mb-3"
-                >
-                  <Card className={`p-4 ${selectedMealType === type ? 'bg-teal-50 border-2 border-teal-500' : ''}`}>
-                    <Text className="text-lg font-semibold text-gray-900">{type}</Text>
-                  </Card>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
+          <View>
+            <Text className="text-2xl font-bold text-gray-900 mb-2">
+              Where are you eating today?
+            </Text>
+            <Text className="text-base text-gray-600 mb-6">
+              Select your dining hall location
+            </Text>
+            {diningHalls.map((hall) => (
+              <DiningHallButton
+                key={hall}
+                label={hall}
+                selected={selectedHall === hall}
+                onPress={() => setSelectedHall(hall)}
+              />
+            ))}
+            <TouchableOpacity
+              onPress={handleStep1Next}
+              disabled={!selectedHall}
+              className={`mt-6 py-4 rounded-xl items-center ${
+                selectedHall ? 'bg-teal-500' : 'bg-gray-300'
+              }`}
+            >
+              <Text className={`font-semibold text-lg ${
+                selectedHall ? 'text-white' : 'text-gray-500'
+              }`}>
+                Continue
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
 
+        {/* Step 2: Choose or Search Meal */}
         {step === 2 && (
-          <>
-            <View className="mb-4">
-              <Text className="text-sm text-gray-500 mb-1">Step 2 of 2</Text>
-              <Text className="text-lg text-gray-600 mb-2">
-                {selectedMealType ? `Add ${selectedMealType}` : 'Search/Add meal'}
-              </Text>
-            </View>
-
-            {/* Where are you eating? */}
-            <View className="mb-6">
-              <Text className="text-xl font-bold text-gray-900 mb-3">Where are you eating today?</Text>
-              {diningHalls.map((hall) => (
-                <DiningHallButton
-                  key={hall}
-                  label={hall}
-                  selected={selectedHall === hall}
-                  onPress={() => setSelectedHall(hall)}
-                />
-              ))}
-            </View>
+          <View>
+            <Text className="text-2xl font-bold text-gray-900 mb-2">
+              Choose or search for a meal
+            </Text>
+            <Text className="text-base text-gray-600 mb-6">
+              Find your meal from {selectedHall}
+            </Text>
 
             {/* Search Bar */}
             <View className="mb-6">
@@ -143,7 +159,7 @@ export default function MealPage() {
                     key={index}
                     onPress={() => handleMealSelect(suggestion)}
                   >
-                    <Card className="mr-3 w-64">
+                    <Card className="mr-3 w-64 bg-orange-50">
                       <View className="flex-row items-center mb-2">
                         <Ionicons name="sparkles" size={20} color="#14b8a6" />
                         <Text className="font-bold text-gray-900 ml-2 text-lg">{suggestion.name}</Text>
@@ -166,7 +182,7 @@ export default function MealPage() {
                   key={index}
                   onPress={() => handleMealSelect(meal)}
                 >
-                  <Card className="mb-3">
+                  <Card className="mb-3 bg-pink-50">
                     <Text className="font-bold text-gray-900 mb-2 text-lg">{meal.name}</Text>
                     <Text className="text-sm text-gray-600 mb-2">
                       {meal.ingredients.join(', ')}
@@ -176,7 +192,51 @@ export default function MealPage() {
                 </TouchableOpacity>
               ))}
             </View>
-          </>
+          </View>
+        )}
+
+        {/* Step 3: Confirm Meal Details */}
+        {step === 3 && selectedMeal && (
+          <View>
+            <Text className="text-2xl font-bold text-gray-900 mb-2">
+              Confirm Meal Details
+            </Text>
+            <Text className="text-base text-gray-600 mb-6">
+              Review your meal selection
+            </Text>
+
+            <Card className="mb-6 bg-teal-50">
+              <View className="mb-4">
+                <Text className="text-sm text-gray-500 mb-1">Dining Hall</Text>
+                <Text className="text-lg font-semibold text-gray-900">{selectedHall}</Text>
+              </View>
+              <View className="mb-4">
+                <Text className="text-sm text-gray-500 mb-1">Meal Name</Text>
+                <Text className="text-lg font-semibold text-gray-900">{selectedMeal.name}</Text>
+              </View>
+              {selectedMeal.ingredients && (
+                <View className="mb-4">
+                  <Text className="text-sm text-gray-500 mb-1">Ingredients</Text>
+                  <Text className="text-base text-gray-700">
+                    {selectedMeal.ingredients.join(', ')}
+                  </Text>
+                </View>
+              )}
+              <View>
+                <Text className="text-sm text-gray-500 mb-1">Calories</Text>
+                <Text className="text-2xl font-bold text-teal-600">{selectedMeal.calories} cal</Text>
+              </View>
+            </Card>
+
+            <TouchableOpacity
+              onPress={handleConfirmMeal}
+              className="mt-6 py-4 rounded-xl items-center bg-teal-500"
+            >
+              <Text className="font-semibold text-lg text-white">
+                Confirm & Add Meal
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
       </ScrollView>
 
