@@ -104,6 +104,78 @@ The app uses Atomic Design principles for component organization:
 3. Test on both iOS and Android if possible
 4. Submit a pull request
 
+## Backend Setup
+
+The backend is built with FastAPI and integrates with Snowflake for data warehousing.
+
+### Backend Tech Stack
+
+- **Framework**: FastAPI (Python)
+- **Database**: Snowflake
+- **Authentication**: JWT tokens
+- **API Documentation**: OpenAPI/Swagger
+
+### Backend Prerequisites
+
+- Python 3.9 or later
+- pip (Python package manager)
+- Snowflake account and credentials
+- Virtual environment tool (venv or conda)
+
+### Setting up the Backend
+
+1. Navigate to the backend directory:
+```bash
+cd umunch/hackumass/backend
+```
+
+2. Create and activate a virtual environment:
+```bash
+# Windows (PowerShell)
+python -m venv venv
+.\venv\Scripts\Activate
+
+# macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+4. Set up environment variables (create a .env file):
+```bash
+SNOWFLAKE_ACCOUNT=your_account
+SNOWFLAKE_USER=your_username
+SNOWFLAKE_PASSWORD=your_password
+SNOWFLAKE_DATABASE=your_database
+SNOWFLAKE_SCHEMA=your_schema
+JWT_SECRET=your_secret_key
+```
+
+5. Start the development server:
+```bash
+uvicorn app.main:app --reload
+```
+
+The API will be available at http://localhost:8000
+- API documentation: http://localhost:8000/docs
+- Alternative docs: http://localhost:8000/redoc
+
+### API Structure
+
+The backend provides RESTful endpoints for:
+- User authentication (signup/login)
+- User profile management
+- Dietary preferences
+- Meal tracking
+- Workout logging
+- Analytics events
+
+See the API documentation at `/docs` for detailed endpoint specifications.
+
 ## License
 
 This project was created for HackUMass.
