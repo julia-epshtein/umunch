@@ -1,6 +1,6 @@
 import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
-import { Button } from '../atoms/Button';
+import { Button } from '../components/atoms/Button';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
