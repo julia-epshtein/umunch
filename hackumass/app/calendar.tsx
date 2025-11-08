@@ -37,15 +37,39 @@ export default function CalendarPage() {
   // Get current date
   const today = new Date();
   const currentDay = today.getDate();
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
 
-  // Sample calendar data
-  const days = Array.from({ length: 30 }, (_, i) => i + 1);
+  // Calendar setup - 7-column layout
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
-  // Get weekday for each date
+  // Get the first day of the month and number of days
+  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  
+  // Create calendar grid with proper alignment
+  const calendarDays: (number | null)[] = [];
+  
+  // Add empty cells for days before the first day of the month
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    calendarDays.push(null);
+  }
+  
+  // Add all days of the month
+  for (let day = 1; day <= daysInMonth; day++) {
+    calendarDays.push(day);
+  }
+  
+  // Get weekday for a specific date
   const getWeekday = (day: number) => {
-    const date = new Date(2024, 6, day);
+    const date = new Date(currentYear, currentMonth, day);
     return weekdays[date.getDay()];
+  };
+  
+  // Get weekday index for alignment (0 = Sunday, 6 = Saturday)
+  const getWeekdayIndex = (day: number) => {
+    const date = new Date(currentYear, currentMonth, day);
+    return date.getDay();
   };
 
   const handleDatePress = (day: number) => {
@@ -54,12 +78,15 @@ export default function CalendarPage() {
   };
 
   const currentDayData = selectedDate ? dayData[selectedDate] : null;
-  const selectedDateObj = selectedDate ? new Date(2024, 6, selectedDate) : new Date();
+  const selectedDateObj = selectedDate ? new Date(currentYear, currentMonth, selectedDate) : new Date();
   const dateString = selectedDateObj.toLocaleDateString('en-US', { 
     weekday: 'long', 
     month: 'long', 
     day: 'numeric' 
   });
+  
+  // Get weekday for selected date
+  const selectedWeekday = selectedDate ? getWeekday(selectedDate) : null;
 
   const getWorkoutIcon = (type: string) => {
     if (type.toLowerCase().includes('run')) return 'walk';
@@ -88,17 +115,21 @@ export default function CalendarPage() {
         <Text className="text-4xl font-bold text-gray-900 mb-2">Calendar</Text>
         <Text className="text-lg text-gray-600 mb-6">Tap a date to view or edit details</Text>
 
-        {/* Calendar Grid - Increased Size */}
+        {/* Calendar Grid - 7-column layout */}
         <View className="mb-6" style={{ minHeight: '60%' }}>
-          <View className="flex-row flex-wrap justify-around">
-            {days.map((day) => {
+          <View className="flex-row flex-wrap">
+            {calendarDays.map((day, index) => {
+              if (day === null) {
+                return <View key={`empty-${index}`} className="w-[14.28%] aspect-square" />;
+              }
+              
               const hasData = dayData[day];
               const isSelected = selectedDate === day;
               const isCurrentDay = day === currentDay;
-              const weekday = getWeekday(day);
+              const weekdayIndex = getWeekdayIndex(day);
               
               return (
-                <View key={day} className="w-[14%] items-center mb-4">
+                <View key={day} className="w-[14.28%] items-center mb-4">
                   <TouchableOpacity
                     onPress={() => handleDatePress(day)}
                     className={`w-14 h-14 rounded-full items-center justify-center mb-1 ${
@@ -121,10 +152,20 @@ export default function CalendarPage() {
                       {day}
                     </Text>
                   </TouchableOpacity>
-                  {/* Weekday below - Current day is black and underlined */}
+                </View>
+              );
+            })}
+          </View>
+          
+          {/* Weekday Labels at Bottom - Aligned with columns */}
+          <View className="flex-row justify-around mt-2">
+            {weekdays.map((weekday) => {
+              const isSelectedWeekday = selectedWeekday === weekday;
+              return (
+                <View key={weekday} className="w-[14.28%] items-center">
                   <Text
                     className={`text-xs ${
-                      isCurrentDay
+                      isSelectedWeekday
                         ? 'text-black font-bold underline'
                         : 'text-gray-500'
                     }`}

@@ -3,7 +3,7 @@ import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { Card } from '../components/molecules/Card';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface Workout {
   id: string;
@@ -31,9 +31,14 @@ export default function WorkoutPage() {
   const [durationInput, setDurationInput] = useState('');
   const [workouts, setWorkouts] = useState<Workout[]>([
     { id: '1', type: 'Indoor Run', duration: 35, distance: 7.12, calories: 452, date: new Date(), completed: false },
-    { id: '2', type: 'Outdoor Cycle', duration: 24, distance: 4.22, calories: 248, date: new Date(), completed: true },
+    { id: '2', type: 'Outdoor Cycle', duration: 24, distance: 4.22, calories: 248, date: new Date(), completed: false },
   ]);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const [undoWorkoutId, setUndoWorkoutId] = useState<string | null>(null);
+  const undoTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Separate workouts into active and completed
+  const activeWorkouts = workouts.filter(w => !w.completed);
+  const completedWorkouts = workouts.filter(w => w.completed);
 
   const handleAddWorkout = (workoutType: string) => {
     setSelectedWorkoutType(workoutType);
@@ -85,11 +90,46 @@ export default function WorkoutPage() {
     );
   };
 
-  const handleToggleComplete = (workoutId: string) => {
+  const handleMarkComplete = (workoutId: string) => {
+    // Clear any existing undo timer
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+    }
+    
+    // Mark as completed
     setWorkouts(workouts.map(w => 
-      w.id === workoutId ? { ...w, completed: !w.completed } : w
+      w.id === workoutId ? { ...w, completed: true } : w
     ));
+    
+    // Set up undo
+    setUndoWorkoutId(workoutId);
+    
+    // Clear undo after 8 seconds
+    undoTimerRef.current = setTimeout(() => {
+      setUndoWorkoutId(null);
+    }, 8000);
   };
+
+  const handleUndo = () => {
+    if (undoWorkoutId) {
+      setWorkouts(workouts.map(w => 
+        w.id === undoWorkoutId ? { ...w, completed: false } : w
+      ));
+      setUndoWorkoutId(null);
+      if (undoTimerRef.current) {
+        clearTimeout(undoTimerRef.current);
+      }
+    }
+  };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) {
+        clearTimeout(undoTimerRef.current);
+      }
+    };
+  }, []);
 
   const getWorkoutIcon = (type: string) => {
     const workout = workoutTypes.find(w => type.toLowerCase().includes(w.name.toLowerCase()));
@@ -106,6 +146,84 @@ export default function WorkoutPage() {
     return workout?.bgColor || '#f3f4f6';
   };
 
+  const renderWorkoutCard = (workout: Workout, isCompleted: boolean = false) => (
+    <TouchableOpacity
+      key={workout.id}
+      onLongPress={() => handleLongPress(workout.id)}
+      activeOpacity={0.7}
+    >
+      <Card
+        className="mb-3 p-5 rounded-2xl"
+        style={{ 
+          backgroundColor: getWorkoutBgColor(workout.type),
+          opacity: isCompleted ? 0.6 : 1,
+          minHeight: 96, // Minimum height as specified
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
+      >
+        <View className="flex-row items-center">
+          {/* Left Icon */}
+          <View
+            className="w-16 h-16 rounded-full items-center justify-center mr-4"
+            style={{ backgroundColor: getWorkoutColor(workout.type) + '20' }}
+          >
+            <Ionicons
+              name={getWorkoutIcon(workout.type) as any}
+              size={32}
+              color={getWorkoutColor(workout.type)}
+            />
+          </View>
+
+          {/* Center Content */}
+          <View className="flex-1">
+            <View className="flex-row items-center mb-1">
+              <Text className={`text-lg font-bold text-gray-900 mr-2 ${
+                isCompleted ? 'line-through' : ''
+              }`}>
+                {workout.type}
+              </Text>
+              {isCompleted && (
+                <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+              )}
+            </View>
+            <Text className="text-sm text-gray-600">
+              {workout.duration} min
+              {workout.distance && ` • ${workout.distance} km`}
+            </Text>
+          </View>
+
+          {/* Right: Calories and Mark Complete */}
+          <View className="items-end mr-2">
+            <View className="flex-row items-center mb-3">
+              <Ionicons name="flame" size={16} color="#f97316" />
+              <Text className="text-base font-bold text-gray-900 ml-1">
+                {workout.calories} kcal
+              </Text>
+            </View>
+            {!isCompleted ? (
+              <TouchableOpacity
+                onPress={() => handleMarkComplete(workout.id)}
+                className="px-4 py-2 bg-teal-500 rounded-lg"
+              >
+                <Text className="text-white font-semibold text-sm">Mark Complete</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={() => handleEdit(workout.id)}
+              >
+                <Ionicons name="create-outline" size={20} color="#6b7280" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </Card>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
@@ -114,86 +232,34 @@ export default function WorkoutPage() {
           <Text className="text-4xl font-bold text-gray-900 mb-2">Today</Text>
         </View>
 
-        {/* Workout Cards - Increased Height */}
-        {workouts.length > 0 ? (
+        {/* Undo Toast */}
+        {undoWorkoutId && (
+          <View className="mb-4 p-4 bg-gray-800 rounded-xl flex-row items-center justify-between">
+            <Text className="text-white font-medium">Workout marked as complete</Text>
+            <TouchableOpacity onPress={handleUndo}>
+              <Text className="text-teal-400 font-semibold">Undo</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Today's Workouts Section */}
+        {activeWorkouts.length > 0 ? (
           <View className="mb-6">
-            {workouts.map((workout) => (
-              <TouchableOpacity
-                key={workout.id}
-                onPress={() => handleToggleComplete(workout.id)}
-                onLongPress={() => handleLongPress(workout.id)}
-                activeOpacity={0.7}
-              >
-                <Card
-                  className="mb-3 p-5 rounded-2xl"
-                  style={{ 
-                    backgroundColor: getWorkoutBgColor(workout.type),
-                    opacity: workout.completed ? 0.6 : 1,
-                    minHeight: 100, // Increased container height
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}
-                >
-                  <View className="flex-row items-center">
-                    {/* Left Icon */}
-                    <View
-                      className="w-16 h-16 rounded-full items-center justify-center mr-4"
-                      style={{ backgroundColor: getWorkoutColor(workout.type) + '20' }}
-                    >
-                      <Ionicons
-                        name={getWorkoutIcon(workout.type) as any}
-                        size={32}
-                        color={getWorkoutColor(workout.type)}
-                      />
-                    </View>
-
-                    {/* Center Content */}
-                    <View className="flex-1">
-                      <View className="flex-row items-center mb-1">
-                        <Text className={`text-lg font-bold text-gray-900 mr-2 ${
-                          workout.completed ? 'line-through' : ''
-                        }`}>
-                          {workout.type}
-                        </Text>
-                        {workout.completed && (
-                          <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                        )}
-                      </View>
-                      <Text className="text-sm text-gray-600">
-                        {workout.duration} min
-                        {workout.distance && ` • ${workout.distance} km`}
-                      </Text>
-                      {workout.completed && (
-                        <Text className="text-xs text-green-600 font-semibold mt-1">Completed</Text>
-                      )}
-                    </View>
-
-                    {/* Right Calories and Edit */}
-                    <View className="items-end mr-2">
-                      <View className="flex-row items-center mb-2">
-                        <Ionicons name="flame" size={16} color="#f97316" />
-                        <Text className="text-base font-bold text-gray-900 ml-1">
-                          {workout.calories} kcal
-                        </Text>
-                      </View>
-                      <TouchableOpacity
-                        onPress={() => handleEdit(workout.id)}
-                      >
-                        <Ionicons name="create-outline" size={20} color="#6b7280" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </Card>
-              </TouchableOpacity>
-            ))}
+            <Text className="text-xl font-bold text-gray-900 mb-3">Today's Workouts</Text>
+            {activeWorkouts.map(workout => renderWorkoutCard(workout, false))}
           </View>
         ) : (
           <View className="mb-6 p-8 items-center bg-gray-50 rounded-2xl">
             <Ionicons name="fitness-outline" size={48} color="#9ca3af" />
             <Text className="text-gray-500 text-center mt-4">No workouts logged today</Text>
+          </View>
+        )}
+
+        {/* Completed Today Section - Only show if there are completed workouts */}
+        {completedWorkouts.length > 0 && (
+          <View className="mb-6">
+            <Text className="text-xl font-bold text-gray-900 mb-3">Completed Today</Text>
+            {completedWorkouts.map(workout => renderWorkoutCard(workout, true))}
           </View>
         )}
 

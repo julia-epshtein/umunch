@@ -31,7 +31,8 @@ export default function LoginPage() {
           <View className="px-6 pt-12 pb-8">
             {/* Brand Title - Largest and Most Prominent */}
             <View className="items-center mb-16 mt-8">
-              <Text className="text-6xl font-bold text-gray-900 mb-2">UMunch</Text>
+              <Ionicons name="restaurant" size={60} color="#14b8a6" />
+              <Text className="text-6xl font-bold text-gray-900 mb-2 mt-4">UMunch</Text>
             </View>
 
             <Text className="text-3xl font-bold text-gray-900 mb-2">

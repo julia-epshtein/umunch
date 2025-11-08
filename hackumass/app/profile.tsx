@@ -10,12 +10,13 @@ export default function ProfilePage() {
   const [showSettings, setShowSettings] = useState(false);
 
   // Sample user data - in production, this would come from state/API
+  // Favorite Dining Hall is now a single value, not an array
   const userData = {
     name: 'John Doe',
     email: 'john.doe@example.com',
     dietaryPreferences: ['Vegetarian', 'Gluten-Free', 'Low Carb'],
     allergies: ['Dairy', 'Nuts', 'Shellfish'],
-    favoriteDiningHalls: ['Berkshire', 'Worcester'],
+    favoriteDiningHall: 'Berkshire', // Single value, not array
     caloriesGoal: 2000,
   };
 
@@ -24,10 +25,14 @@ export default function ProfilePage() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        className="flex-1 px-6 pt-6 pb-24" 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
         {/* Header with Settings Icon */}
         <View className="flex-row items-center justify-between mb-6">
-          <Text className="text-4xl font-bold text-gray-900">Profile</Text>
+          <Text className="text-4xl font-bold text-gray-900" numberOfLines={1}>Profile</Text>
           <TouchableOpacity
             onPress={() => setShowSettings(true)}
             className="w-10 h-10 items-center justify-center"
@@ -49,7 +54,9 @@ export default function ProfilePage() {
           >
             <Ionicons name="person" size={64} color="white" />
           </View>
-          <Text className="text-3xl font-bold text-gray-900 mb-2">{userData.name}</Text>
+          <Text className="text-3xl font-bold text-gray-900 mb-2" numberOfLines={1} ellipsizeMode="tail">
+            {userData.name}
+          </Text>
         </View>
 
         {/* Dietary Preferences Section */}
@@ -73,6 +80,8 @@ export default function ProfilePage() {
                 <Text
                   className="text-sm font-semibold"
                   style={{ color: preferenceColors[index % preferenceColors.length] }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
                 >
                   {pref}
                 </Text>
@@ -102,6 +111,8 @@ export default function ProfilePage() {
                 <Text
                   className="text-sm font-semibold"
                   style={{ color: allergyColors[index % allergyColors.length] }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
                 >
                   {allergy}
                 </Text>
@@ -110,7 +121,7 @@ export default function ProfilePage() {
           </View>
         </View>
 
-        {/* Favorite Dining Hall Section */}
+        {/* Favorite Dining Hall Section - Single Value */}
         <View className="mb-4 p-4 bg-orange-50 rounded-2xl"
           style={{
             shadowColor: '#000',
@@ -121,13 +132,15 @@ export default function ProfilePage() {
           }}
         >
           <Text className="text-lg font-bold text-gray-900 mb-3">Favorite Dining Hall</Text>
-          <View>
-            {userData.favoriteDiningHalls.map((hall) => (
-              <View key={hall} className="flex-row items-center mb-2">
-                <Ionicons name="restaurant" size={20} color="#f97316" style={{ marginRight: 8 }} />
-                <Text className="text-base text-gray-900">{hall}</Text>
-              </View>
-            ))}
+          <View className="flex-row items-center">
+            <Ionicons name="restaurant" size={20} color="#f97316" style={{ marginRight: 8 }} />
+            <Text 
+              className="text-base text-gray-900 flex-1" 
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {userData.favoriteDiningHall}
+            </Text>
           </View>
         </View>
 
@@ -173,12 +186,12 @@ export default function ProfilePage() {
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <TouchableOpacity className="py-4 border-b border-gray-200 flex-row items-center justify-between">
-                <Text className="text-base font-medium text-gray-900">Edit Profile</Text>
+                <Text className="text-base font-medium text-gray-900" numberOfLines={1}>Edit Profile</Text>
                 <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
               </TouchableOpacity>
 
               <TouchableOpacity className="py-4 border-b border-gray-200 flex-row items-center justify-between">
-                <Text className="text-base font-medium text-gray-900">Help & Support</Text>
+                <Text className="text-base font-medium text-gray-900" numberOfLines={1}>Help & Support</Text>
                 <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
               </TouchableOpacity>
 
@@ -189,7 +202,7 @@ export default function ProfilePage() {
                   router.push('/login');
                 }}
               >
-                <Text className="text-base font-medium text-red-600">Sign Out</Text>
+                <Text className="text-base font-medium text-red-600" numberOfLines={1}>Sign Out</Text>
                 <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
               </TouchableOpacity>
             </ScrollView>
