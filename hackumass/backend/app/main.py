@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .testdb import router as test_db_router
 from .routers import dashboard, meals, workout, coach, onboarding
+from .food_image_service import get_food_image_service
 
 app = FastAPI(title="UMunch API")
 
@@ -24,3 +25,10 @@ app.include_router(onboarding.router)
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.on_event("startup")
+async def startup_event():
+    """Preload the food image dataset on server startup."""
+    print("Preloading food image dataset...")
+    get_food_image_service()
+    print("Food image service ready!")

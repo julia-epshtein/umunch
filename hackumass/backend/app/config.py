@@ -11,5 +11,7 @@ class Settings:
     snowflake_database: str = os.getenv("SNOWFLAKE_DATABASE", "")
     snowflake_schema: str = os.getenv("SNOWFLAKE_SCHEMA", "")
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
+    server_host: str = os.getenv("SERVER_HOST", "0.0.0.0")
+    server_port: int = int(os.getenv("SERVER_PORT", "8000"))
 
 settings = Settings()

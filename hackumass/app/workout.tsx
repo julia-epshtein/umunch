@@ -319,19 +319,33 @@ export default function WorkoutPage() {
         )}
 
         {/* Add Workout Button */}
-        <TouchableOpacity
-          onPress={() => setShowAddModal(true)}
-          className="py-5 rounded-xl items-center bg-teal-500"
-          style={{
-            shadowColor: '#14b8a6',
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.3,
-            shadowRadius: 6,
-            elevation: 5,
-          }}
-        >
-          <Text className="font-semibold text-lg text-white">+ Add Workout</Text>
-        </TouchableOpacity>
+        <View className="flex-row items-center">
+          <TouchableOpacity
+            onPress={() => setShowAddModal(true)}
+            className="flex-1 py-5 rounded-xl items-center bg-teal-500 mr-3"
+            style={{
+              shadowColor: '#14b8a6',
+              shadowOffset: { width: 0, height: 3 },
+              shadowOpacity: 0.3,
+              shadowRadius: 6,
+              elevation: 5,
+            }}
+          >
+            <Text className="font-semibold text-lg text-white">+ Add Workout</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="w-14 h-14 bg-teal-500 rounded-xl items-center justify-center"
+            style={{
+              shadowColor: '#14b8a6',
+              shadowOffset: { width: 0, height: 3 },
+              shadowOpacity: 0.3,
+              shadowRadius: 6,
+              elevation: 5,
+            }}
+          >
+            <Ionicons name="mic" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       {/* Add Workout Slide-Out Modal - White Background */}
@@ -383,13 +397,27 @@ export default function WorkoutPage() {
                 <Text className="text-base text-gray-600 mb-4">
                   How long did you work out? (in minutes)
                 </Text>
-                <TextInput
-                  value={durationInput}
-                  onChangeText={setDurationInput}
-                  placeholder="e.g., 30"
-                  keyboardType="numeric"
-                  className="bg-gray-50 border-2 border-gray-300 rounded-xl px-4 py-4 text-gray-900 text-lg mb-6"
-                />
+                <View className="flex-row items-center mb-6">
+                  <TextInput
+                    value={durationInput}
+                    onChangeText={setDurationInput}
+                    placeholder="e.g., 30"
+                    keyboardType="numeric"
+                    className="flex-1 bg-gray-50 border-2 border-gray-300 rounded-xl px-4 py-4 text-gray-900 text-lg"
+                  />
+                  <TouchableOpacity
+                    className="ml-3 w-14 h-14 bg-teal-500 rounded-xl items-center justify-center"
+                    style={{
+                      shadowColor: '#14b8a6',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 4,
+                      elevation: 3,
+                    }}
+                  >
+                    <Ionicons name="mic" size={24} color="white" />
+                  </TouchableOpacity>
+                </View>
                 <TouchableOpacity
                   onPress={handleConfirmWorkout}
                   disabled={!durationInput}

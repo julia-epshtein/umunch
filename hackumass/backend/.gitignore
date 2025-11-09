@@ -1,39 +1,19 @@
-# Python
+# Python cache and compiled files
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
 
-# Virtual Environment
+# Ignore any nested pycache folders
+**/__pycache__/
+
+# Environment and config
 .env
-.venv
+.env.*
+.venv/
 venv/
 ENV/
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Logs
-*.log
-
-# Local development
+# OS / Editor / Local stuff
 .DS_Store
+.vscode/
+.idea/

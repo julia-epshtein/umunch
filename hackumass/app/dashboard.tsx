@@ -1,27 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import {
+  SafeAreaView,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Modal,
+  ActivityIndicator,
+} from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { Card } from '../components/molecules/Card';
 import { NestedDonutChart } from '../components/molecules';
 import { DatePicker } from '../components/atoms/DatePicker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { UmunchApi } from '../lib/api'; // 👈 NEW: backend API helper
+import { UmunchApi } from '../lib/api';
+
+type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
+interface MealItemRecommendation {
+  itemName: string;
+  estimatedCalories: number;
+  reason: string;
+}
+
+interface RecommendationResponse {
+  meal_type: MealType;
+  dining_hall: string;
+  recommendations: MealItemRecommendation[];
+}
 
 export default function DashboardPage() {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // 👇 NEW: dashboard data state
   const [snapshot, setSnapshot] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // TODO: replace with real logged-in user ID/email
+  // temporary external user key for dashboard snapshot
   const externalUserKey = 'test_user_1';
 
-  // 👇 NEW: fetch dashboard data from backend on mount
+  // AI coach state
+  const [selectedMealType, setSelectedMealType] = useState<MealType | null>(null);
+  const [selectedDiningHall, setSelectedDiningHall] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [recData, setRecData] = useState<RecommendationResponse | null>(null);
+  const [aiModalVisible, setAiModalVisible] = useState(false);
+
   useEffect(() => {
     (async () => {
       try {
@@ -36,7 +64,6 @@ export default function DashboardPage() {
     })();
   }, []);
 
-  // 🔢 Use backend data if we have it; otherwise fall back to 0s
   const calories = snapshot
     ? {
         consumed: snapshot.CONSUMED_KCAL ?? 0,
@@ -72,26 +99,42 @@ export default function DashboardPage() {
         },
       }
     : {
-        carbs: { consumed: 0, goal: 0, label: 'Carbs', color: '#f97316', backgroundColor: '#fff7ed' },
-        protein: { consumed: 0, goal: 0, label: 'Protein', color: '#3b82f6', backgroundColor: '#eff6ff' },
-        fat: { consumed: 0, goal: 0, label: 'Fat', color: '#eab308', backgroundColor: '#fefce8' },
+        carbs: {
+          consumed: 0,
+          goal: 0,
+          label: 'Carbs',
+          color: '#f97316',
+          backgroundColor: '#fff7ed',
+        },
+        protein: {
+          consumed: 0,
+          goal: 0,
+          label: 'Protein',
+          color: '#3b82f6',
+          backgroundColor: '#eff6ff',
+        },
+        fat: {
+          consumed: 0,
+          goal: 0,
+          label: 'Fat',
+          color: '#eab308',
+          backgroundColor: '#fefce8',
+        },
       };
 
   const caloriesPercentage =
     calories.goal > 0 ? (calories.consumed / calories.goal) * 100 : 0;
 
-  // Get current day of week (0 = Sunday, 1 = Monday, etc.)
   const currentDayIndex = selectedDate.getDay();
   const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  
-  // Get the date for each day of the week
+
   const getWeekDates = () => {
-    const dates = [];
+    const dates: number[] = [];
     const today = new Date(selectedDate);
     const dayOfWeek = today.getDay();
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - dayOfWeek);
-    
+
     for (let i = 0; i < 7; i++) {
       const date = new Date(startOfWeek);
       date.setDate(startOfWeek.getDate() + i);
@@ -103,13 +146,16 @@ export default function DashboardPage() {
   const weekDates = getWeekDates();
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
+
+  const mealTypes: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
+  const diningHalls = ['Worcester', 'Franklin', 'Berkshire', 'Hampshire'];
 
   const meals = [
     { id: 'breakfast', name: 'Breakfast', icon: 'cafe', color: '#f97316', bgColor: '#fff7ed' },
@@ -119,34 +165,60 @@ export default function DashboardPage() {
   ];
 
   const healthyHabits = [
-    { 
-      id: 'water', 
-      name: 'Water', 
-      icon: 'water', 
+    {
+      id: 'water',
+      name: 'Water',
+      icon: 'water',
       subtitle: '0.0 oz — You must be thirsty.',
       color: '#3b82f6',
       bgColor: '#eff6ff',
-      route: '/water'
+      route: '/water',
     },
-    { 
-      id: 'exercise', 
-      name: 'Exercise', 
-      icon: 'fitness', 
+    {
+      id: 'exercise',
+      name: 'Exercise',
+      icon: 'fitness',
       subtitle: 'Track exercise to see calorie burn.',
       color: '#14b8a6',
       bgColor: '#f0fdfa',
-      route: '/workout'
+      route: '/workout',
     },
-    { 
-      id: 'steps', 
-      name: 'Steps', 
-      icon: 'walk', 
+    {
+      id: 'steps',
+      name: 'Steps',
+      icon: 'walk',
       subtitle: 'Connect a device.',
       color: '#f97316',
       bgColor: '#fff7ed',
-      route: '/steps'
+      route: '/steps',
     },
   ];
+
+  const handleGetRecommendation = async () => {
+    if (!selectedMealType || !selectedDiningHall) {
+      setAiError('Please select both a meal type and a dining hall.');
+      return;
+    }
+
+    try {
+      setAiLoading(true);
+      setAiError(null);
+
+      const data = await UmunchApi.getAiRecommendation({
+        meal_type: selectedMealType,
+        dining_hall: selectedDiningHall,
+        user_id: 101, // temp test user
+      });
+
+      setRecData(data);
+      setAiModalVisible(true);
+    } catch (err: any) {
+      console.error('AI rec error', err);
+      setAiError(err.message || 'Something went wrong while getting recommendations.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleMealPress = (mealId: string) => {
     router.push('/meal');
@@ -179,7 +251,10 @@ export default function DashboardPage() {
         {/* Header with Today and Date Picker */}
         <View className="mb-6">
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-3xl font-bold text-gray-900">Today</Text>
+            <View>
+              <Text className="text-3xl font-bold text-gray-900">Today</Text>
+              <Text className="text-sm text-gray-500">{formatDate(selectedDate)}</Text>
+            </View>
             <TouchableOpacity
               onPress={() => setShowDatePicker(true)}
               className="flex-row items-center px-4 py-2 bg-gray-100 rounded-xl"
@@ -199,9 +274,7 @@ export default function DashboardPage() {
                 <Text className="text-xs text-gray-500 mb-1">{day}</Text>
                 <View
                   className={`w-10 h-10 rounded-full items-center justify-center ${
-                    index === currentDayIndex
-                      ? 'bg-teal-500'
-                      : 'bg-gray-100'
+                    index === currentDayIndex ? 'bg-teal-500' : 'bg-gray-100'
                   }`}
                 >
                   <Text
@@ -244,15 +317,79 @@ export default function DashboardPage() {
           />
         </Card>
 
+        {/* AI Meal Coach Section */}
+        <View className="mb-4">
+          <Text className="text-xl font-bold text-gray-900 mb-3">AI Meal Coach</Text>
+
+          {/* Meal type buttons */}
+          <View className="flex-row justify-between mb-3">
+            {mealTypes.map((type) => (
+              <TouchableOpacity
+                key={type}
+                className={`flex-1 mx-1 rounded-lg p-3 items-center ${
+                  selectedMealType === type ? 'bg-purple-600' : 'bg-gray-100'
+                }`}
+                onPress={() => setSelectedMealType(type)}
+              >
+                <Text
+                  className={
+                    selectedMealType === type
+                      ? 'text-white font-semibold'
+                      : 'text-gray-800 font-medium'
+                  }
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Dining hall chips */}
+          <View className="flex-row flex-wrap mb-3">
+            {diningHalls.map((hall) => (
+              <TouchableOpacity
+                key={hall}
+                className={`px-3 py-2 rounded-full mr-2 mb-2 ${
+                  selectedDiningHall === hall ? 'bg-purple-600' : 'bg-gray-100'
+                }`}
+                onPress={() => setSelectedDiningHall(hall)}
+              >
+                <Text
+                  className={
+                    selectedDiningHall === hall
+                      ? 'text-white font-medium'
+                      : 'text-gray-800 font-medium'
+                  }
+                >
+                  {hall}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Ask button */}
+          <TouchableOpacity
+            className={`mt-1 rounded-xl p-4 items-center ${
+              aiLoading ? 'bg-gray-400' : 'bg-indigo-600'
+            }`}
+            disabled={aiLoading}
+            onPress={handleGetRecommendation}
+          >
+            {aiLoading ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text className="text-white font-semibold">Get AI Recommendation</Text>
+            )}
+          </TouchableOpacity>
+
+          {aiError && <Text className="text-red-500 mt-2">{aiError}</Text>}
+        </View>
+
         {/* Meals Section */}
         <View className="mb-4">
           <Text className="text-xl font-bold text-gray-900 mb-3">Meals</Text>
           {meals.map((meal) => (
-            <TouchableOpacity
-              key={meal.id}
-              onPress={() => handleMealPress(meal.id)}
-              className="mb-3"
-            >
+            <TouchableOpacity key={meal.id} onPress={() => handleMealPress(meal.id)} className="mb-3">
               <Card className="rounded-2xl shadow-sm" style={{ backgroundColor: meal.bgColor }}>
                 <View className="flex-row items-center justify-between p-4">
                   <View className="flex-row items-center flex-1">
@@ -332,6 +469,48 @@ export default function DashboardPage() {
                 setShowDatePicker(false);
               }}
             />
+          </View>
+        </View>
+      </Modal>
+
+      {/* AI Recommendation Modal */}
+      <Modal
+        visible={aiModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setAiModalVisible(false)}
+      >
+        <View className="flex-1 justify-end bg-black/40">
+          <View className="bg-white rounded-t-3xl p-6 max-h-[70%]">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-lg font-bold text-gray-900">
+                {recData
+                  ? `${recData.meal_type.toUpperCase()} • ${recData.dining_hall}`
+                  : 'AI Recommendation'}
+              </Text>
+              <TouchableOpacity onPress={() => setAiModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+
+            {recData ? (
+              <ScrollView>
+                {recData.recommendations.map((item) => (
+                  <View key={item.itemName} className="mb-3">
+                    <Text className="font-semibold text-gray-900">• {item.itemName}</Text>
+                    <Text className="text-xs text-gray-600">
+                      ~{item.estimatedCalories} kcal
+                    </Text>
+                    <Text className="text-xs text-gray-700 mt-1">{item.reason}</Text>
+                  </View>
+                ))}
+                {recData.recommendations.length === 0 && (
+                  <Text className="text-gray-700">No recommendations for this hall.</Text>
+                )}
+              </ScrollView>
+            ) : (
+              <Text className="text-gray-700">No data yet.</Text>
+            )}
           </View>
         </View>
       </Modal>
