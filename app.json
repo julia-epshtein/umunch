@@ -1,0 +1,31 @@
+{
+    "expo": {
+      "scheme": "elevenlabs",
+      "userInterfaceStyle": "automatic",
+      "ios": {
+        "infoPlist": {
+          "NSMicrophoneUsageDescription": "This app uses the microphone to record audio."
+        },
+        "supportsTablet": true,
+        "bundleIdentifier": "com.umunch.app"
+      },
+      "android": {
+        "permissions": [
+          "android.permission.RECORD_AUDIO",
+          "android.permission.ACCESS_NETWORK_STATE",
+          "android.permission.CAMERA",
+          "android.permission.INTERNET",
+          "android.permission.MODIFY_AUDIO_SETTINGS",
+          "android.permission.SYSTEM_ALERT_WINDOW",
+          "android.permission.WAKE_LOCK",
+          "android.permission.BLUETOOTH"
+        ],
+        "adaptiveIcon": {
+          "foregroundImage": "./assets/adaptive-icon.png",
+          "backgroundColor": "#ffffff"
+        },
+        "package": "com.umunch.app"
+      },
+      "plugins": ["@livekit/react-native-expo-plugin", "@config-plugins/react-native-webrtc"]
+    }
+  }
