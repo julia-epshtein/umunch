@@ -8,7 +8,6 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 import { invalidateDashboardCache } from './dashboard';
-import { getCurrentUser } from '../lib/userStorage';
 
 // API Configuration
 // Use localhost for web, 10.0.2.2 for Android emulator, or your computer's IP for physical device/iOS simulator

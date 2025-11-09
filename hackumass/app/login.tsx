@@ -5,7 +5,6 @@ import { LinkText } from '../components/molecules/LinkText';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { setCurrentUser } from '../lib/userStorage';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,19 +14,8 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     setLoading(true);
-    
-    // Simulate login and save user info
+    // Simulate login
     setTimeout(() => {
-      // Save the logged-in user's email and name
-      // In production, this would come from your auth API
-      const userName = email === 'roman.pisani@example.com' 
-        ? 'Roman Pisani' 
-        : email === 'tgray@gmail.com'
-        ? 'Tiffany Gray'
-        : 'User'; // Default name
-      
-      setCurrentUser(email, userName);
-      
       setLoading(false);
       router.push('/dashboard');
     }, 1500);
