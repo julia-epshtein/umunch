@@ -1,26 +1,84 @@
-import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { Card } from '../components/molecules/Card';
 import { NestedDonutChart } from '../components/molecules';
 import { DatePicker } from '../components/atoms/DatePicker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { UmunchApi } from '../lib/api'; // 👈 NEW: backend API helper
 
 export default function DashboardPage() {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Sample data - in production, this would come from state/API
-  const calories = { consumed: 1230, goal: 2000 };
-  const macros = {
-    carbs: { consumed: 225, goal: 250, label: 'Carbs', color: '#f97316', backgroundColor: '#fff7ed' },
-    protein: { consumed: 150, goal: 150, label: 'Protein', color: '#3b82f6', backgroundColor: '#eff6ff' },
-    fat: { consumed: 67, goal: 67, label: 'Fat', color: '#eab308', backgroundColor: '#fefce8' },
-  };
+  // 👇 NEW: dashboard data state
+  const [snapshot, setSnapshot] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const caloriesPercentage = (calories.consumed / calories.goal) * 100;
+  // TODO: replace with real logged-in user ID/email
+  const externalUserKey = 'test_user_1';
+
+  // 👇 NEW: fetch dashboard data from backend on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await UmunchApi.getTodayDashboard(externalUserKey);
+        setSnapshot(res.snapshot);
+      } catch (e: any) {
+        console.error('Failed to load dashboard', e);
+        setError(e.message ?? 'Failed to load dashboard');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // 🔢 Use backend data if we have it; otherwise fall back to 0s
+  const calories = snapshot
+    ? {
+        consumed: snapshot.CONSUMED_KCAL ?? 0,
+        goal: snapshot.KCAL_TARGET ?? 0,
+      }
+    : {
+        consumed: 0,
+        goal: 0,
+      };
+
+  const macros = snapshot
+    ? {
+        carbs: {
+          consumed: snapshot.CONSUMED_CARB_G ?? 0,
+          goal: snapshot.CARB_TARGET_G ?? 0,
+          label: 'Carbs',
+          color: '#f97316',
+          backgroundColor: '#fff7ed',
+        },
+        protein: {
+          consumed: snapshot.CONSUMED_PROTEIN_G ?? 0,
+          goal: snapshot.PROTEIN_TARGET_G ?? 0,
+          label: 'Protein',
+          color: '#3b82f6',
+          backgroundColor: '#eff6ff',
+        },
+        fat: {
+          consumed: snapshot.CONSUMED_FAT_G ?? 0,
+          goal: snapshot.FAT_TARGET_G ?? 0,
+          label: 'Fat',
+          color: '#eab308',
+          backgroundColor: '#fefce8',
+        },
+      }
+    : {
+        carbs: { consumed: 0, goal: 0, label: 'Carbs', color: '#f97316', backgroundColor: '#fff7ed' },
+        protein: { consumed: 0, goal: 0, label: 'Protein', color: '#3b82f6', backgroundColor: '#eff6ff' },
+        fat: { consumed: 0, goal: 0, label: 'Fat', color: '#eab308', backgroundColor: '#fefce8' },
+      };
+
+  const caloriesPercentage =
+    calories.goal > 0 ? (calories.consumed / calories.goal) * 100 : 0;
 
   // Get current day of week (0 = Sunday, 1 = Monday, etc.)
   const currentDayIndex = selectedDate.getDay();
@@ -97,6 +155,23 @@ export default function DashboardPage() {
   const handleHabitPress = (route: string) => {
     router.push(route);
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator />
+        <Text className="mt-2 text-gray-600">Loading your day...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+        <Text className="text-red-500">Error: {error}</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
