@@ -3,7 +3,7 @@ import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { DiningHallButton } from '../components/molecules/DiningHallButton';
 import { SearchBar } from '../components/molecules/SearchBar';
 import { Card } from '../components/molecules/Card';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
@@ -27,6 +27,7 @@ const getApiBaseUrl = () => {
   return `http://${apiHost}:${apiPort}`;
 };
 
+// Memoize the API URL so it's only computed once
 const API_BASE_URL = getApiBaseUrl();
 
 interface MenuItem {
@@ -62,8 +63,8 @@ export default function MealPage() {
   // UMass Dining Halls - matching what students expect
   const diningHalls = ['Berkshire', 'Worcester', 'Frank', 'Hampshire'];
 
-  // Static AI suggestions - fetch images on mount
-  const [aiSuggestions, setAiSuggestions] = useState([
+  // Static AI suggestions - images fetched lazily when needed
+  const [aiSuggestions] = useState([
     { name: 'Grilled Chicken Salad', calories: 320, image_url: null },
     { name: 'Quinoa Bowl', calories: 450, image_url: null },
     { name: 'Greek Yogurt Parfait', calories: 280, image_url: null },
@@ -72,30 +73,11 @@ export default function MealPage() {
     { name: 'Pasta Primavera', calories: 420, image_url: null },
   ]);
 
-  // Fetch images for AI suggestions on mount
-  useEffect(() => {
-    const fetchAiImages = async () => {
-      const suggestionsWithImages = await Promise.all(
-        aiSuggestions.map(async (suggestion) => {
-          const imageUrl = await fetchFoodImage(suggestion.name);
-          return { ...suggestion, image_url: imageUrl };
-        })
-      );
-      setAiSuggestions(suggestionsWithImages);
-    };
-    
-    fetchAiImages();
-  }, []); // Run once on mount
+  // Removed the useEffect that was fetching images on mount
+  // Images for AI suggestions will be fetched when they're actually viewed (lazy loading)
 
-  // Fetch menu items when dining hall is selected
-  useEffect(() => {
-    if (selectedHall && step === 2) {
-      fetchMenuItems(selectedHall);
-    }
-  }, [selectedHall, step]);
-
-  // Fetch food image for a specific meal
-  const fetchFoodImage = async (foodName: string): Promise<string | null> => {
+  // Memoized fetch food image function to prevent recreating on every render
+  const fetchFoodImage = useCallback(async (foodName: string): Promise<string | null> => {
     // Check cache first
     if (imageCache[foodName]) {
       return imageCache[foodName];
@@ -116,10 +98,10 @@ export default function MealPage() {
     }
     
     return null;
-  };
+  }, [imageCache]); // Depend on imageCache
 
-  // Fetch menu items from API
-  const fetchMenuItems = async (hallName: string) => {
+  // Memoized fetch menu items function
+  const fetchMenuItems = useCallback(async (hallName: string) => {
     setLoadingMenu(true);
     setApiError(null);
     try {
@@ -201,7 +183,14 @@ export default function MealPage() {
     } finally {
       setLoadingMenu(false);
     }
-  };
+  }, []); // Empty deps - function doesn't depend on any props/state
+
+  // Fetch menu items when dining hall is selected
+  useEffect(() => {
+    if (selectedHall && step === 2) {
+      fetchMenuItems(selectedHall);
+    }
+  }, [selectedHall, step, fetchMenuItems]); // Include fetchMenuItems since it's now memoized
 
   // All menu items from API go to "Available Meals"
   // AI suggestions are static and independent
