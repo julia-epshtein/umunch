@@ -26,11 +26,44 @@ app.include_router(onboarding.router)
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    """Health check endpoint - responds immediately without database access."""
+    return {"status": "ok", "message": "Server is running"}
+
+@app.get("/health/db")
+def health_db():
+    """Health check with database connection test."""
+    try:
+        from .db import fetch_one
+        result = fetch_one("SELECT CURRENT_VERSION() AS version;")
+        return {
+            "status": "ok",
+            "database": "connected",
+            "snowflake_version": result.get("VERSION") if result else "unknown"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "database": "disconnected",
+            "error": str(e)
+        }
 
 @app.on_event("startup")
 async def startup_event():
-    """Preload the food image dataset on server startup."""
-    print("Preloading food image dataset...")
-    get_food_image_service()
-    print("Food image service ready!")
+    """Preload the food image dataset on server startup (non-blocking)."""
+    import asyncio
+    
+    async def load_food_service():
+        """Load food image service in background."""
+        try:
+            print("⏳ Preloading food image dataset (this may take a moment)...")
+            # Run the blocking operation in a thread pool
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, get_food_image_service)
+            print("✅ Food image service ready!")
+        except Exception as e:
+            print(f"⚠️ Warning: Failed to load food image service: {e}")
+            print("⚠️ Server will continue without food images (some features may be limited)")
+    
+    # Start loading in background - don't block server startup
+    asyncio.create_task(load_food_service())
+    print("✅ Server is ready to accept requests (food images loading in background)")

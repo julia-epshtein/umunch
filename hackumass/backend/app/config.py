@@ -1,7 +1,18 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()  # loads variables from .env in the backend root
+# Load .env file from backend directory, or parent directory if not found
+backend_dir = Path(__file__).parent.parent  # Go up from app/ to backend/
+env_path = backend_dir / ".env"
+if not env_path.exists():
+    # Try parent directory (hackumass/.env)
+    parent_env = backend_dir.parent / ".env"
+    if parent_env.exists():
+        env_path = parent_env
+
+load_dotenv(env_path)  # Load from the correct location
+print(f"📁 Loading .env from: {env_path}")
 
 class Settings:
     snowflake_account: str = os.getenv("SNOWFLAKE_ACCOUNT", "")
