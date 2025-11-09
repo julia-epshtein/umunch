@@ -9,3 +9,5 @@ websockets
 python-multipart
 requests
 pyaudio
+datasets
+pillow

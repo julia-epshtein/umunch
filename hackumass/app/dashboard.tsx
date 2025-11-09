@@ -1,26 +1,147 @@
-import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, ActivityIndicator, RefreshControl } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { Card } from '../components/molecules/Card';
 import { NestedDonutChart } from '../components/molecules';
 import { DatePicker } from '../components/atoms/DatePicker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { UmunchApi } from '../lib/api'; // 👈 NEW: backend API helper
+
+// Simple in-memory cache with TTL (Time To Live)
+let dashboardCache: { data: any; timestamp: number } | null = null;
+const CACHE_TTL = 30000; // 30 seconds - adjust as needed
+
+// Export function to invalidate cache (can be called from other pages)
+export const invalidateDashboardCache = () => {
+  dashboardCache = null;
+};
 
 export default function DashboardPage() {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Sample data - in production, this would come from state/API
-  const calories = { consumed: 1230, goal: 2000 };
-  const macros = {
-    carbs: { consumed: 225, goal: 250, label: 'Carbs', color: '#f97316', backgroundColor: '#fff7ed' },
-    protein: { consumed: 150, goal: 150, label: 'Protein', color: '#3b82f6', backgroundColor: '#eff6ff' },
-    fat: { consumed: 67, goal: 67, label: 'Fat', color: '#eab308', backgroundColor: '#fefce8' },
-  };
+  // 👇 NEW: dashboard data state
+  const [snapshot, setSnapshot] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const caloriesPercentage = (calories.consumed / calories.goal) * 100;
+  // TODO: replace with real logged-in user ID/email
+  const externalUserKey = 'test_user_1';
+  
+  // DEMO: Hardcoded name for demo purposes
+  const demoUserName = 'Roman Pisani';
+
+  // 👇 OPTIMIZED: Memoized fetch function with caching
+  const fetchDashboardData = useCallback(async (isRefresh = false) => {
+    // Check cache first (unless it's a manual refresh)
+    if (!isRefresh && dashboardCache) {
+      const age = Date.now() - dashboardCache.timestamp;
+      if (age < CACHE_TTL) {
+        // Cache is fresh, use it
+        setSnapshot(dashboardCache.data);
+        setLoading(false);
+        return;
+      }
+    }
+
+    if (!isRefresh) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
+    setError(null);
+
+    try {
+      const res = await UmunchApi.getTodayDashboard(externalUserKey);
+      const data = res.snapshot;
+      
+      // 🎭 DEMO: Override data to 0s for Roman Pisani
+      let finalData = data;
+      if (demoUserName === 'Roman Pisani') {
+        finalData = {
+          ...data,
+          CONSUMED_KCAL: 0,
+          CONSUMED_PROTEIN_G: 0,
+          CONSUMED_CARB_G: 0,
+          CONSUMED_FAT_G: 0,
+          KCAL_TARGET: data?.KCAL_TARGET || 2500,
+          PROTEIN_TARGET_G: data?.PROTEIN_TARGET_G || 150,
+          CARB_TARGET_G: data?.CARB_TARGET_G || 250,
+          FAT_TARGET_G: data?.FAT_TARGET_G || 70,
+        };
+      }
+      
+      setSnapshot(finalData);
+      // Update cache
+      dashboardCache = {
+        data: finalData,
+        timestamp: Date.now(),
+      };
+    } catch (e: any) {
+      console.error('Failed to load dashboard', e);
+      setError(e.message ?? 'Failed to load dashboard');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [externalUserKey]);
+
+  // 👇 OPTIMIZED: Only fetch on initial mount
+  useEffect(() => {
+    fetchDashboardData(false);
+  }, [fetchDashboardData]);
+
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(() => {
+    fetchDashboardData(true);
+  }, [fetchDashboardData]);
+
+  // 🔢 Use backend data if we have it; otherwise fall back to 0s
+  const calories = snapshot
+    ? {
+        consumed: snapshot.CONSUMED_KCAL ?? 0,
+        goal: snapshot.KCAL_TARGET ?? 0,
+      }
+    : {
+        consumed: 0,
+        goal: 0,
+      };
+
+  const macros = snapshot
+    ? {
+        carbs: {
+          consumed: snapshot.CONSUMED_CARB_G ?? 0,
+          goal: snapshot.CARB_TARGET_G ?? 0,
+          label: 'Carbs',
+          color: '#f97316',
+          backgroundColor: '#fff7ed',
+        },
+        protein: {
+          consumed: snapshot.CONSUMED_PROTEIN_G ?? 0,
+          goal: snapshot.PROTEIN_TARGET_G ?? 0,
+          label: 'Protein',
+          color: '#3b82f6',
+          backgroundColor: '#eff6ff',
+        },
+        fat: {
+          consumed: snapshot.CONSUMED_FAT_G ?? 0,
+          goal: snapshot.FAT_TARGET_G ?? 0,
+          label: 'Fat',
+          color: '#eab308',
+          backgroundColor: '#fefce8',
+        },
+      }
+    : {
+        carbs: { consumed: 0, goal: 0, label: 'Carbs', color: '#f97316', backgroundColor: '#fff7ed' },
+        protein: { consumed: 0, goal: 0, label: 'Protein', color: '#3b82f6', backgroundColor: '#eff6ff' },
+        fat: { consumed: 0, goal: 0, label: 'Fat', color: '#eab308', backgroundColor: '#fefce8' },
+      };
+
+  const caloriesPercentage =
+    calories.goal > 0 ? (calories.consumed / calories.goal) * 100 : 0;
 
   // Get current day of week (0 = Sunday, 1 = Monday, etc.)
   const currentDayIndex = selectedDate.getDay();
@@ -98,9 +219,33 @@ export default function DashboardPage() {
     router.push(route);
   };
 
+  // Show loading spinner only on first load when we have no data
+  if (loading && snapshot === null) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#14b8a6" />
+        <Text className="mt-2 text-gray-600">Loading your day...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+        <Text className="text-red-500">Error: {error}</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        className="flex-1 px-6 pt-6 pb-24" 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#14b8a6']} tintColor="#14b8a6" />
+        }
+      >
         {/* Header with Today and Date Picker */}
         <View className="mb-6">
           <View className="flex-row items-center justify-between mb-4">

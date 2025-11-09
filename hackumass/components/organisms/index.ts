@@ -6,3 +6,4 @@ export { ActivityLevelSelector } from './ActivityLevelSelector';
 export { DiningHallSelector } from './DiningHallSelector';
 export { MealTracker } from './MealTracker';
 export { WorkoutForm } from './WorkoutForm';
+export { MenuWithImages } from './MenuWithImages';

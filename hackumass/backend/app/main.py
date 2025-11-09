@@ -1,23 +1,36 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import testdb
+from .testdb import router as test_db_router
 from . import elevenlabs_router
+from .routers import dashboard, meals, workout, coach, onboarding
+from .food_image_service import get_food_image_service
 
 app = FastAPI(title="UMunch API")
 
-# Allow your Expo app / frontend to call this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: tighten this in prod
+    allow_origins=["*"],  # tighten later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.include_router(test_db_router)
+app.include_router(elevenlabs_router.router)
+app.include_router(dashboard.router)
+app.include_router(meals.router)
+app.include_router(workout.router)
+app.include_router(coach.router)
+app.include_router(onboarding.router)
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-app.include_router(testdb.router)
-app.include_router(elevenlabs_router.router)
+@app.on_event("startup")
+async def startup_event():
+    """Preload the food image dataset on server startup."""
+    print("Preloading food image dataset...")
+    get_food_image_service()
+    print("Food image service ready!")
