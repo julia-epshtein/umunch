@@ -4,3 +4,8 @@ snowflake-connector-python
 python-dotenv
 pydantic
 google-generativeai
+elevenlabs
+websockets
+python-multipart
+requests
+pyaudio
