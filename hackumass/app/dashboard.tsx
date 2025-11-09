@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, ActivityIndicator, RefreshControl } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { Card } from '../components/molecules/Card';
 import { NestedDonutChart } from '../components/molecules';
@@ -7,6 +7,15 @@ import { DatePicker } from '../components/atoms/DatePicker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { UmunchApi } from '../lib/api'; // 👈 NEW: backend API helper
+
+// Simple in-memory cache with TTL (Time To Live)
+let dashboardCache: { data: any; timestamp: number } | null = null;
+const CACHE_TTL = 30000; // 30 seconds - adjust as needed
+
+// Export function to invalidate cache (can be called from other pages)
+export const invalidateDashboardCache = () => {
+  dashboardCache = null;
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -16,25 +25,100 @@ export default function DashboardPage() {
   // 👇 NEW: dashboard data state
   const [snapshot, setSnapshot] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // TODO: replace with real logged-in user ID/email
   const externalUserKey = 'test_user_1';
+  
+  // 🎭 DEMO: Get actual user from auth - ONLY hardcode for specific demo emails
+  // TODO: Replace with actual auth context/AsyncStorage
+  const loggedInUserEmail = ''; // This should come from your auth system
+  const loggedInUserName = ''; // This should come from your auth system
+  
+  // Only apply hardcoded data if the logged-in user matches demo users
+  const isDemoTiffany = loggedInUserEmail === 'tgray@gmail.com' || loggedInUserName === 'Tiffany Gray';
+  const isDemoRoman = loggedInUserEmail === 'roman.pisani@example.com' || loggedInUserName === 'Roman Pisani';
 
-  // 👇 NEW: fetch dashboard data from backend on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await UmunchApi.getTodayDashboard(externalUserKey);
-        setSnapshot(res.snapshot);
-      } catch (e: any) {
-        console.error('Failed to load dashboard', e);
-        setError(e.message ?? 'Failed to load dashboard');
-      } finally {
+  // 👇 OPTIMIZED: Memoized fetch function with caching
+  const fetchDashboardData = useCallback(async (isRefresh = false) => {
+    // Check cache first (unless it's a manual refresh)
+    if (!isRefresh && dashboardCache) {
+      const age = Date.now() - dashboardCache.timestamp;
+      if (age < CACHE_TTL) {
+        // Cache is fresh, use it
+        setSnapshot(dashboardCache.data);
         setLoading(false);
+        return;
       }
-    })();
-  }, []);
+    }
+
+    if (!isRefresh) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
+    setError(null);
+
+    try {
+      const res = await UmunchApi.getTodayDashboard(externalUserKey);
+      const data = res.snapshot;
+      
+      // 🎭 DEMO: Override data for demo users
+      let finalData = data;
+      
+      if (isDemoRoman) {
+        // Roman: Starting fresh (0 calories/macros)
+        finalData = {
+          ...data,
+          CONSUMED_KCAL: 0,
+          CONSUMED_PROTEIN_G: 0,
+          CONSUMED_CARB_G: 0,
+          CONSUMED_FAT_G: 0,
+          KCAL_TARGET: data?.KCAL_TARGET || 2500,
+          PROTEIN_TARGET_G: data?.PROTEIN_TARGET_G || 150,
+          CARB_TARGET_G: data?.CARB_TARGET_G || 250,
+          FAT_TARGET_G: data?.FAT_TARGET_G || 70,
+        };
+      } else if (isDemoTiffany) {
+        // Tiffany: Has eaten an acai bowl (600 cal)
+        finalData = {
+          ...data,
+          CONSUMED_KCAL: 600,
+          CONSUMED_PROTEIN_G: 40,
+          CONSUMED_CARB_G: 100,
+          CONSUMED_FAT_G: 70,
+          KCAL_TARGET: data?.KCAL_TARGET || 1900,
+          PROTEIN_TARGET_G: data?.PROTEIN_TARGET_G || 150,
+          CARB_TARGET_G: data?.CARB_TARGET_G || 250,
+          FAT_TARGET_G: data?.FAT_TARGET_G || 80,
+        };
+      }
+      
+      setSnapshot(finalData);
+      // Update cache
+      dashboardCache = {
+        data: finalData,
+        timestamp: Date.now(),
+      };
+    } catch (e: any) {
+      console.error('Failed to load dashboard', e);
+      setError(e.message ?? 'Failed to load dashboard');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [externalUserKey]);
+
+  // 👇 OPTIMIZED: Only fetch on initial mount
+  useEffect(() => {
+    fetchDashboardData(false);
+  }, [fetchDashboardData]);
+
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(() => {
+    fetchDashboardData(true);
+  }, [fetchDashboardData]);
 
   // 🔢 Use backend data if we have it; otherwise fall back to 0s
   const calories = snapshot
@@ -156,10 +240,11 @@ export default function DashboardPage() {
     router.push(route);
   };
 
-  if (loading) {
+  // Show loading spinner only on first load when we have no data
+  if (loading && snapshot === null) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
+        <ActivityIndicator size="large" color="#14b8a6" />
         <Text className="mt-2 text-gray-600">Loading your day...</Text>
       </SafeAreaView>
     );
@@ -175,7 +260,13 @@ export default function DashboardPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <ScrollView className="flex-1 px-6 pt-6 pb-24" showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        className="flex-1 px-6 pt-6 pb-24" 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#14b8a6']} tintColor="#14b8a6" />
+        }
+      >
         {/* Header with Today and Date Picker */}
         <View className="mb-6">
           <View className="flex-row items-center justify-between mb-4">

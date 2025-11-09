@@ -7,6 +7,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
+import { invalidateDashboardCache } from './dashboard';
 
 // API Configuration
 // Use localhost for web, 10.0.2.2 for Android emulator, or your computer's IP for physical device/iOS simulator
@@ -59,22 +60,479 @@ export default function MealPage() {
   const [loadingMenu, setLoadingMenu] = useState(false);
   const [imageCache, setImageCache] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
+  const [loadingAiSuggestions, setLoadingAiSuggestions] = useState(false);
+
+  // 🎭 DEMO: Get actual user from auth - ONLY hardcode for specific demo emails
+  // TODO: Replace with actual auth context/AsyncStorage
+  const loggedInUserEmail = ''; // This should come from your auth system
+  const loggedInUserName = ''; // This should come from your auth system
+  
+  // Only apply hardcoded data if the logged-in user matches demo users
+  const isDemoTiffany = loggedInUserEmail === 'tgray@gmail.com' || loggedInUserName === 'Tiffany Gray';
+  const isDemoRoman = loggedInUserEmail === 'roman.pisani@example.com' || loggedInUserName === 'Roman Pisani';
+  
+  // 🎭 DEMO: Hardcoded Halal AI Suggestions for Roman Pisani at Berkshire (without images initially)
+  const ROMAN_BERK_AI_SUGGESTIONS_BASE = [
+    {
+      name: 'Grilled Chicken Breast',
+      calories: 165,
+      reason: 'Excellent lean protein source, perfect for muscle building goals',
+    },
+    {
+      name: 'Rice Pilaf',
+      calories: 206,
+      reason: 'Complex carbs for sustained energy during workouts',
+    },
+    {
+      name: 'Beef Kebab',
+      calories: 250,
+      reason: 'High protein halal option with healthy fats for weight gain',
+    },
+    {
+      name: 'Falafel Wrap',
+      calories: 333,
+      reason: 'Plant-based protein with good calorie density',
+    },
+    {
+      name: 'Lamb Biryani',
+      calories: 420,
+      reason: 'Calorie-dense halal meal with protein and carbs for muscle gain',
+    },
+  ];
+
+  // 🎭 DEMO: Hardcoded Regular Meals for Roman Pisani at Berkshire (without images initially)
+  const ROMAN_BERK_REGULAR_MEALS_BASE: MenuItem[] = [
+    {
+      menu_item_id: 1001,
+      name: 'Scrambled Eggs',
+      kcal: 140,
+      calories: 140,
+      protein_g: 12,
+      carb_g: 2,
+      fat_g: 10,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Eggs', 'Butter', 'Salt'],
+    },
+    {
+      menu_item_id: 1002,
+      name: 'Turkey Sandwich',
+      kcal: 320,
+      calories: 320,
+      protein_g: 28,
+      carb_g: 35,
+      fat_g: 8,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Turkey', 'Bread', 'Lettuce', 'Tomato'],
+    },
+    {
+      menu_item_id: 1003,
+      name: 'Caesar Salad',
+      kcal: 184,
+      calories: 184,
+      protein_g: 8,
+      carb_g: 12,
+      fat_g: 12,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Romaine Lettuce', 'Caesar Dressing', 'Croutons'],
+    },
+    {
+      menu_item_id: 1004,
+      name: 'Pasta Marinara',
+      kcal: 350,
+      calories: 350,
+      protein_g: 12,
+      carb_g: 65,
+      fat_g: 5,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Pasta', 'Tomato Sauce', 'Garlic', 'Herbs'],
+    },
+    {
+      menu_item_id: 1005,
+      name: 'Chicken Stir Fry',
+      kcal: 380,
+      calories: 380,
+      protein_g: 35,
+      carb_g: 28,
+      fat_g: 14,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Chicken', 'Mixed Vegetables', 'Soy Sauce'],
+    },
+    {
+      menu_item_id: 1006,
+      name: 'French Fries',
+      kcal: 312,
+      calories: 312,
+      protein_g: 4,
+      carb_g: 41,
+      fat_g: 15,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Potatoes', 'Oil', 'Salt'],
+    },
+    {
+      menu_item_id: 1007,
+      name: 'Greek Yogurt Parfait',
+      kcal: 180,
+      calories: 180,
+      protein_g: 15,
+      carb_g: 25,
+      fat_g: 3,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Greek Yogurt', 'Granola', 'Berries', 'Honey'],
+    },
+    {
+      menu_item_id: 1008,
+      name: 'Veggie Burger',
+      kcal: 290,
+      calories: 290,
+      protein_g: 18,
+      carb_g: 38,
+      fat_g: 9,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Veggie Patty', 'Bun', 'Lettuce', 'Tomato'],
+    },
+    {
+      menu_item_id: 1009,
+      name: 'Fruit Smoothie',
+      kcal: 220,
+      calories: 220,
+      protein_g: 6,
+      carb_g: 48,
+      fat_g: 2,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Banana', 'Strawberries', 'Milk', 'Yogurt'],
+    },
+    {
+      menu_item_id: 1010,
+      name: 'Pancakes with Syrup',
+      kcal: 425,
+      calories: 425,
+      protein_g: 8,
+      carb_g: 75,
+      fat_g: 12,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Flour', 'Eggs', 'Milk', 'Maple Syrup'],
+    },
+  ];
+
+  // 🎭 DEMO: Hardcoded Healthy AI Suggestions for Tiffany Gray at any dining hall
+  const TIFFANY_AI_SUGGESTIONS_BASE = [
+    {
+      name: 'Greek Yogurt Parfait',
+      calories: 180,
+      reason: 'High protein, low calorie breakfast option with probiotics',
+    },
+    {
+      name: 'Grilled Salmon',
+      calories: 280,
+      reason: 'Rich in omega-3s and lean protein for healthy eating',
+    },
+    {
+      name: 'Quinoa Bowl',
+      calories: 220,
+      reason: 'Complete protein with fiber and essential nutrients',
+    },
+    {
+      name: 'Green Smoothie',
+      calories: 150,
+      reason: 'Packed with vitamins and minerals, naturally energizing',
+    },
+    {
+      name: 'Grilled Chicken Salad',
+      calories: 300,
+      reason: 'Lean protein with fresh vegetables for balanced nutrition',
+    },
+  ];
+
+  // 🎭 DEMO: Hardcoded Healthy Regular Meals for Tiffany Gray
+  const TIFFANY_REGULAR_MEALS_BASE: MenuItem[] = [
+    {
+      menu_item_id: 2001,
+      name: 'Acai Bowl',
+      kcal: 350,
+      calories: 350,
+      protein_g: 8,
+      carb_g: 65,
+      fat_g: 12,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Acai', 'Granola', 'Banana', 'Berries', 'Honey'],
+    },
+    {
+      menu_item_id: 2002,
+      name: 'Avocado Toast',
+      kcal: 280,
+      calories: 280,
+      protein_g: 10,
+      carb_g: 30,
+      fat_g: 15,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Whole Wheat Bread', 'Avocado', 'Tomato', 'Egg'],
+    },
+    {
+      menu_item_id: 2003,
+      name: 'Kale Salad',
+      kcal: 220,
+      calories: 220,
+      protein_g: 12,
+      carb_g: 18,
+      fat_g: 10,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Kale', 'Lemon Dressing', 'Chickpeas', 'Seeds'],
+    },
+    {
+      menu_item_id: 2004,
+      name: 'Grilled Vegetable Wrap',
+      kcal: 310,
+      calories: 310,
+      protein_g: 14,
+      carb_g: 42,
+      fat_g: 10,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Whole Wheat Wrap', 'Zucchini', 'Peppers', 'Hummus'],
+    },
+    {
+      menu_item_id: 2005,
+      name: 'Brown Rice Bowl',
+      kcal: 380,
+      calories: 380,
+      protein_g: 18,
+      carb_g: 55,
+      fat_g: 12,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Brown Rice', 'Tofu', 'Broccoli', 'Sesame Sauce'],
+    },
+    {
+      menu_item_id: 2006,
+      name: 'Lentil Soup',
+      kcal: 240,
+      calories: 240,
+      protein_g: 16,
+      carb_g: 38,
+      fat_g: 3,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Lentils', 'Vegetables', 'Herbs', 'Broth'],
+    },
+    {
+      menu_item_id: 2007,
+      name: 'Egg White Omelette',
+      kcal: 200,
+      calories: 200,
+      protein_g: 20,
+      carb_g: 8,
+      fat_g: 8,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Egg Whites', 'Spinach', 'Tomatoes', 'Mushrooms'],
+    },
+    {
+      menu_item_id: 2008,
+      name: 'Fruit Salad',
+      kcal: 120,
+      calories: 120,
+      protein_g: 2,
+      carb_g: 30,
+      fat_g: 1,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Mixed Berries', 'Melon', 'Pineapple', 'Mint'],
+    },
+    {
+      menu_item_id: 2009,
+      name: 'Grilled Fish Tacos',
+      kcal: 340,
+      calories: 340,
+      protein_g: 28,
+      carb_g: 35,
+      fat_g: 10,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Grilled Fish', 'Corn Tortilla', 'Cabbage', 'Lime'],
+    },
+    {
+      menu_item_id: 2010,
+      name: 'Sweet Potato Bowl',
+      kcal: 290,
+      calories: 290,
+      protein_g: 10,
+      carb_g: 52,
+      fat_g: 7,
+      hall_name: 'Berkshire Dining Commons',
+      hall_code: 'BERKSHIRE',
+      has_image: false,
+      ingredients: ['Sweet Potato', 'Black Beans', 'Corn', 'Avocado'],
+    },
+  ];
+
+  // Helper function to fetch images for hardcoded meals from the backend
+  const fetchImagesForHardcodedMeals = useCallback(async (meals: any[]) => {
+    try {
+      const foodNames = meals.map(meal => meal.name);
+      const imageResponse = await fetch(`${API_BASE_URL}/meals/images/batch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(foodNames),
+      });
+      
+      if (imageResponse.ok) {
+        const imageResults = await imageResponse.json();
+        
+        // Update meals with images from Hugging Face
+        return meals.map(meal => ({
+          ...meal,
+          image_url: imageResults[meal.name]?.image_url || null,
+          has_image: !!imageResults[meal.name]?.image_url,
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching images for hardcoded meals:', error);
+    }
+    
+    return meals;
+  }, []);
 
   // UMass Dining Halls - matching what students expect
   const diningHalls = ['Berkshire', 'Worcester', 'Frank', 'Hampshire'];
 
-  // Static AI suggestions - images fetched lazily when needed
-  const [aiSuggestions] = useState([
-    { name: 'Grilled Chicken Salad', calories: 320, image_url: null },
-    { name: 'Quinoa Bowl', calories: 450, image_url: null },
-    { name: 'Greek Yogurt Parfait', calories: 280, image_url: null },
-    { name: 'Veggie Wrap', calories: 380, image_url: null },
-    { name: 'Caesar Salad', calories: 250, image_url: null },
-    { name: 'Pasta Primavera', calories: 420, image_url: null },
-  ]);
-
   // Removed the useEffect that was fetching images on mount
   // Images for AI suggestions will be fetched when they're actually viewed (lazy loading)
+
+  // Fetch AI recommendations from Gemini when dining hall is selected
+  const fetchAiRecommendations = useCallback(async (hallName: string) => {
+    setLoadingAiSuggestions(true);
+    try {
+      // 🎭 DEMO: Use hardcoded data for Roman Pisani at Berkshire
+      if (isDemoRoman && hallName === 'Berkshire') {
+        // Fetch images for the hardcoded AI suggestions
+        const mealsWithImages = await fetchImagesForHardcodedMeals(ROMAN_BERK_AI_SUGGESTIONS_BASE);
+        setAiSuggestions(mealsWithImages);
+        setLoadingAiSuggestions(false);
+        return;
+      }
+      
+      // 🎭 DEMO: Use hardcoded healthy meals for Tiffany Gray at any dining hall
+      if (isDemoTiffany) {
+        // Fetch images for Tiffany's healthy AI suggestions
+        const mealsWithImages = await fetchImagesForHardcodedMeals(TIFFANY_AI_SUGGESTIONS_BASE);
+        setAiSuggestions(mealsWithImages);
+        setLoadingAiSuggestions(false);
+        return;
+      }
+      
+      // Map display names to hall codes
+      const hallCodeMap: Record<string, string> = {
+        'Berkshire': 'Berkshire',
+        'Worcester': 'Worcester',
+        'Frank': 'Franklin',
+        'Hampshire': 'Hampshire',
+      };
+
+      const diningHall = hallCodeMap[hallName] || hallName;
+      
+      const response = await fetch(`${API_BASE_URL}/coach/recommendations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          meal_type: 'lunch', // TODO: Make this dynamic based on time of day
+          dining_hall: diningHall,
+          user_id: 101, // TODO: Use actual user ID from auth
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch AI recommendations: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Transform the recommendations to match our MenuItem interface
+      const suggestions = data.recommendations.map((rec: any) => ({
+        name: rec.itemName,
+        calories: Math.round(rec.estimatedCalories),
+        reason: rec.reason,
+        image_url: null, // Will be populated below
+      }));
+
+      // Fetch images for all AI suggestions in batch
+      const foodNames = suggestions.map((s: any) => s.name);
+      try {
+        const imageResponse = await fetch(`${API_BASE_URL}/meals/images/batch`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(foodNames),
+        });
+        
+        if (imageResponse.ok) {
+          const imageResults = await imageResponse.json();
+          // Update cache
+          setImageCache(prev => ({ 
+            ...prev, 
+            ...Object.fromEntries(
+              Object.entries(imageResults).map(([name, data]: [string, any]) => [name, data.image_url])
+            )
+          }));
+          
+          // Add images to suggestions
+          suggestions.forEach((suggestion: any) => {
+            const imageData = imageResults[suggestion.name];
+            if (imageData?.image_url) {
+              suggestion.image_url = imageData.image_url;
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching AI suggestion images:', error);
+      }
+
+      setAiSuggestions(suggestions);
+    } catch (error) {
+      console.error('Error fetching AI recommendations:', error);
+      // Fallback to empty array on error
+      setAiSuggestions([]);
+    } finally {
+      setLoadingAiSuggestions(false);
+    }
+  }, []);
 
   // Memoized fetch food image function to prevent recreating on every render
   const fetchFoodImage = useCallback(async (foodName: string): Promise<string | null> => {
@@ -105,7 +563,23 @@ export default function MealPage() {
     setLoadingMenu(true);
     setApiError(null);
     try {
-      console.log('Fetching menu from:', API_BASE_URL);
+      // 🎭 DEMO: Use hardcoded data for Roman Pisani at Berkshire
+      if (isDemoRoman && hallName === 'Berkshire') {
+        // Fetch images for the hardcoded regular meals
+        const mealsWithImages = await fetchImagesForHardcodedMeals(ROMAN_BERK_REGULAR_MEALS_BASE);
+        setMenuItems(mealsWithImages);
+        setLoadingMenu(false);
+        return;
+      }
+      
+      // 🎭 DEMO: Use hardcoded healthy meals for Tiffany Gray at any dining hall
+      if (isDemoTiffany) {
+        // Fetch images for Tiffany's healthy regular meals
+        const mealsWithImages = await fetchImagesForHardcodedMeals(TIFFANY_REGULAR_MEALS_BASE);
+        setMenuItems(mealsWithImages);
+        setLoadingMenu(false);
+        return;
+      }      console.log('Fetching menu from:', API_BASE_URL);
       
       // Map display names to hall codes
       const hallCodeMap: Record<string, string> = {
@@ -189,8 +663,9 @@ export default function MealPage() {
   useEffect(() => {
     if (selectedHall && step === 2) {
       fetchMenuItems(selectedHall);
+      fetchAiRecommendations(selectedHall);
     }
-  }, [selectedHall, step, fetchMenuItems]); // Include fetchMenuItems since it's now memoized
+  }, [selectedHall, step, fetchMenuItems, fetchAiRecommendations]); // Include both fetch functions
 
   // All menu items from API go to "Available Meals"
   // AI suggestions are static and independent
@@ -207,6 +682,9 @@ export default function MealPage() {
   };
 
   const handleConfirmMeal = () => {
+    // Invalidate dashboard cache so it fetches fresh data
+    invalidateDashboardCache();
+    
     setShowConfirmation(true);
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -386,16 +864,26 @@ export default function MealPage() {
                 ) : (
                   <>
                     {/* AI Suggestions Section - Horizontal Carousel */}
-                    {aiSuggestions.length > 0 && (
+                    {(loadingAiSuggestions || aiSuggestions.length > 0) && (
                       <View className="mb-6">
-                        <Text className="text-xl font-bold text-gray-900 mb-3">AI Suggestions</Text>
-                        <ScrollView 
-                          horizontal 
-                          showsHorizontalScrollIndicator={false}
-                          snapToInterval={180}
-                          decelerationRate="fast"
-                          contentContainerStyle={{ paddingRight: 24 }}
-                        >
+                        <View className="flex-row items-center mb-3">
+                          <Ionicons name="sparkles" size={20} color="#14b8a6" style={{ marginRight: 8 }} />
+                          <Text className="text-xl font-bold text-gray-900">AI Recommendations</Text>
+                        </View>
+                        
+                        {loadingAiSuggestions ? (
+                          <View className="py-8 items-center">
+                            <ActivityIndicator size="small" color="#14b8a6" />
+                            <Text className="text-gray-600 mt-2 text-sm">Getting personalized suggestions...</Text>
+                          </View>
+                        ) : (
+                          <ScrollView 
+                            horizontal 
+                            showsHorizontalScrollIndicator={false}
+                            snapToInterval={180}
+                            decelerationRate="fast"
+                            contentContainerStyle={{ paddingRight: 24 }}
+                          >
                 {aiSuggestions.map((suggestion, index) => {
                   const bgColors = ['#fff7ed', '#eff6ff', '#f5f3ff', '#fefce8', '#f0fdfa', '#fdf2f8'];
                   const bgColor = bgColors[index % bgColors.length];
@@ -451,6 +939,7 @@ export default function MealPage() {
                   );
                 })}
               </ScrollView>
+                        )}
             </View>
             )}
 

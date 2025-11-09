@@ -15,7 +15,34 @@ export default function CalendarPage() {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [dayData, setDayData] = useState<Record<number, DayData>>({
+  
+  // 🎭 DEMO: Get actual user from auth - ONLY hardcode for specific demo emails
+  // TODO: Replace with actual auth context/AsyncStorage
+  const loggedInUserEmail = ''; // This should come from your auth system
+  const loggedInUserName = ''; // This should come from your auth system
+  
+  // Only apply hardcoded data if the logged-in user matches demo users
+  const isDemoTiffany = loggedInUserEmail === 'tgray@gmail.com' || loggedInUserName === 'Tiffany Gray';
+  
+  // 🎭 DEMO: Tiffany Gray's hardcoded calendar data for November 8 & 9
+  const tiffanyCalendarData: Record<number, DayData> = {
+    8: { // November 8th - Run and 3 meals
+      workouts: [{ type: 'Morning Run', duration: 30, distance: 5.0, calories: 320 }],
+      meals: [
+        { name: 'Greek Yogurt Parfait', mealType: 'Breakfast', calories: 180 },
+        { name: 'Grilled Chicken Salad', mealType: 'Lunch', calories: 300 },
+        { name: 'Grilled Salmon', mealType: 'Dinner', calories: 280 },
+      ],
+    },
+    9: { // November 9th - Acai bowl for breakfast
+      meals: [
+        { name: 'Acai Bowl', mealType: 'Breakfast', calories: 350 },
+      ],
+    },
+  };
+  
+  // Default calendar data for non-demo users
+  const defaultCalendarData: Record<number, DayData> = {
     5: { 
       workouts: [{ type: 'Indoor Run', duration: 35, distance: 7.12, calories: 452 }],
       meals: [
@@ -32,7 +59,12 @@ export default function CalendarPage() {
         { name: 'Caesar Salad', mealType: 'Dinner', calories: 350 },
       ],
     },
-  });
+  };
+  
+  // Use Tiffany's data if demo user, otherwise use default
+  const [dayData, setDayData] = useState<Record<number, DayData>>(
+    isDemoTiffany ? tiffanyCalendarData : defaultCalendarData
+  );
 
   // Get current date
   const today = new Date();
