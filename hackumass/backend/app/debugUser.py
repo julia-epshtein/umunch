@@ -7,8 +7,6 @@ from .gemini_client import recommend_meals_json
 def main():
     # 1) Get user
     user = get_user_data(101)
-    print("🧍‍♀️ User row:")
-    print(user)
 
     # 2) Get dining hall rows for a meal type
     meal_type = "lunch"   # or "breakfast", "dinner"
