@@ -7,7 +7,7 @@ from .config import settings
 genai.configure(api_key=settings.gemini_api_key)
 
 
-def recommend_meals_json(user: dict, dining_halls: list[dict], meal_type: str) -> dict:
+def ask_umunch(user: dict, dining_halls: list[dict], meal_type: str) -> dict:
     """
     This is the cleaned-up version of your gemini_recommender.py logic.
     It returns parsed JSON instead of just printing text.

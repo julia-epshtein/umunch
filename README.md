@@ -16,7 +16,7 @@ A React Native mobile application built with Expo Router for tracking meals, wor
 ## Tech Stack
 
 - **Framework**: React Native with Expo
-- **Routing**: Expo Router
+- **Routing**: Expo Routerx
 - **Styling**: NativeWind (TailwindCSS for React Native)
 - **Language**: TypeScript
 - **UI Architecture**: Atomic Design Pattern (Atoms, Molecules, Organisms, Templates)
