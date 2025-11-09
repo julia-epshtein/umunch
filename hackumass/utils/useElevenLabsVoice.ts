@@ -7,21 +7,13 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Alert, Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { setWorkoutData } from './workoutStore';
+import { BASE_URL } from '../lib/api'; // Use the same BASE_URL as the API client
 
-// Get backend URL - handle localhost for development
+// Get backend URL - use the same logic as the API client for consistency
 const getBackendUrl = (): string => {
-  // In development, use your machine's IP address instead of localhost
-  // For production, use your actual backend URL
-  const backendUrl = Constants.expoConfig?.extra?.backendUrl || 
-                     process.env.EXPO_PUBLIC_BACKEND_URL || 
-                     'http://localhost:8000';
-  
-  // If using localhost, warn user (devices can't access localhost)
-  if (backendUrl.includes('localhost') && Constants.deviceId) {
-    console.warn('Warning: Using localhost for backend URL. On physical devices, use your machine IP address.');
-  }
-  
-  return backendUrl;
+  // Use BASE_URL from lib/api.ts which handles iOS/Android/Web correctly
+  // This ensures WebSocket uses the same URL as REST API calls
+  return BASE_URL;
 };
 
 export interface WorkoutData {

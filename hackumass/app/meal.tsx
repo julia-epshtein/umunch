@@ -21,11 +21,24 @@ const getApiBaseUrl = () => {
     return 'http://10.0.2.2:8000';
   }
   
-  // For iOS simulator or physical device, use your computer's local IP from environment
-  // Fallback to hardcoded IP if environment variable is not set
-  const apiHost = process.env.EXPO_PUBLIC_API_HOST;
-  const apiPort = process.env.EXPO_PUBLIC_API_PORT || '8000';
-  return `http://${apiHost}:${apiPort}`;
+  // For iOS simulator, use localhost
+  // For iOS physical device, use your computer's local IP from environment
+  if (Platform.OS === 'ios') {
+    const apiHost = process.env.EXPO_PUBLIC_API_HOST;
+    const apiPort = process.env.EXPO_PUBLIC_API_PORT || '8000';
+    
+    // If no host is provided, default to localhost for simulator
+    // For physical devices, EXPO_PUBLIC_API_HOST must be set to your Mac's local IP
+    if (!apiHost) {
+      console.warn('⚠️ EXPO_PUBLIC_API_HOST not set, using localhost for iOS. For physical devices, set your Mac\'s local IP address.');
+      return 'http://localhost:8000';
+    }
+    
+    return `http://${apiHost}:${apiPort}`;
+  }
+  
+  // Fallback
+  return 'http://localhost:8000';
 };
 
 // Memoize the API URL so it's only computed once

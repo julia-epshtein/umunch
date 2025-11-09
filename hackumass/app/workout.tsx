@@ -33,7 +33,7 @@ export default function WorkoutPage() {
   const [durationInput, setDurationInput] = useState('');
   const [workouts, setWorkouts] = useState<Workout[]>([
     { id: '1', type: 'Running', duration: 35, distance: 7.12, calories: 352, date: new Date(), completed: false },
-    { id: '2', type: 'Outdoor Cycle', duration: 24, distance: 4.22, calories: 248, date: new Date(), completed: false },
+    { id: '2', type: 'Outdoor Cycle', duration: 25, distance: 4.22, calories: 248, date: new Date(), completed: false },
   ]);
   const [undoWorkoutId, setUndoWorkoutId] = useState<string | null>(null);
   const undoTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -56,37 +56,36 @@ export default function WorkoutPage() {
     sendTranscript,
   } = useElevenLabsVoice({
     onWorkoutData: (data) => {
-      // DISABLED FOR HARDCODED TEST - workout is created manually instead
       // Handle workout data from voice agent
       // Map activity to workout type name
-      // const workoutTypeName = data.activity || 'Workout';
-      // 
-      // const newWorkout: Workout = {
-      //   id: Date.now().toString(),
-      //   type: workoutTypeName,
-      //   duration: data.duration,
-      //   calories: Math.round(data.duration * 6.5), // Rough estimate
-      //   date: new Date(),
-      //   completed: false,
-      // };
-      // 
-      // setWorkouts(prev => [...prev, newWorkout]);
-      // 
-      // // Show success message
-      // Alert.alert(
-      //   'Workout Added!',
-      //   `${workoutTypeName} for ${data.duration} minutes has been added.`,
-      //   [
-      //     {
-      //       text: 'OK',
-      //       onPress: () => {
-      //         // Optionally close voice modal
-      //         setShowVoiceModal(false);
-      //         stopConversation();
-      //       },
-      //     },
-      //   ]
-      // );
+      const workoutTypeName = data.activity || 'Workout';
+      
+      const newWorkout: Workout = {
+        id: Date.now().toString(),
+        type: workoutTypeName,
+        duration: data.duration,
+        calories: Math.round(data.duration * 6.5), // Rough estimate
+        date: new Date(),
+        completed: false,
+      };
+      
+      setWorkouts(prev => [...prev, newWorkout]);
+      
+      // Show success message
+      Alert.alert(
+        'Workout Added!',
+        `${workoutTypeName} for ${data.duration} minutes has been added.`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Optionally close voice modal
+              setShowVoiceModal(false);
+              stopConversation();
+            },
+          },
+        ]
+      );
     },
     onTranscript: (transcript, speaker) => {
       setTranscripts(prev => [...prev, { speaker, text: transcript }]);
@@ -230,28 +229,6 @@ export default function WorkoutPage() {
       // Connect and start conversation
       await connect();
       await startConversation();
-      
-      // HARDCODED TEST: After AI asks question, wait 10 seconds then send hardcoded response
-      setTimeout(() => {
-        sendTranscript('I ran for 30 minutes');
-        
-        // After another 3 seconds, automatically create the workout
-        setTimeout(() => {
-          const newWorkout: Workout = {
-            id: Date.now().toString(),
-            type: 'Running',
-            duration: 30,
-            calories: Math.round(30 * 6.5), // 195 calories
-            date: new Date(),
-            completed: false,
-          };
-          setWorkouts(prev => [...prev, newWorkout]);
-          
-          // Close the modal
-          setShowVoiceModal(false);
-          stopConversation();
-        }, 3000);
-      }, 10000);
       
     } catch (error: any) {
       Alert.alert('Error', `Failed to start voice agent: ${error.message}`);
@@ -728,7 +705,7 @@ export default function WorkoutPage() {
                     Start speaking to log your workout!
                   </Text>
                   <Text className="text-gray-400 text-center mt-2 text-sm">
-                    Try saying: "I ran for 30 minutes"
+                    Describe your workout activity and duration
                   </Text>
                 </View>
               ) : (
@@ -755,7 +732,7 @@ export default function WorkoutPage() {
                 <TextInput
                   value={transcriptInput}
                   onChangeText={setTranscriptInput}
-                  placeholder="e.g., I ran for 30 minutes"
+                  placeholder="Describe your workout (e.g., activity and duration)"
                   className="flex-1 bg-gray-50 border-2 border-gray-300 rounded-xl px-4 py-3 text-gray-900"
                   onSubmitEditing={handleSendTranscript}
                 />

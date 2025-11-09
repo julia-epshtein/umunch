@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, ActivityIndicator, RefreshControl } from 'react-native';
+import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, Modal, ActivityIndicator, RefreshControl, Platform } from 'react-native';
 import { BottomNavigation } from '../components/templates/BottomNavigation';
 import { Card } from '../components/molecules/Card';
 import { NestedDonutChart } from '../components/molecules';
 import { DatePicker } from '../components/atoms/DatePicker';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { UmunchApi } from '../lib/api'; // 👈 NEW: backend API helper
+import { UmunchApi, testServerConnection, BASE_URL } from '../lib/api'; // 👈 NEW: backend API helper
 
 // Simple in-memory cache with TTL (Time To Live)
 let dashboardCache: { data: any; timestamp: number } | null = null;
@@ -55,6 +55,10 @@ export default function DashboardPage() {
     setError(null);
 
     try {
+      // Log the API URL being used (for debugging)
+      console.log(`🔍 Fetching dashboard from: ${BASE_URL}/dashboard/today`);
+
+      // Try to fetch dashboard data directly (API client handles errors)
       const res = await UmunchApi.getTodayDashboard(externalUserKey);
       const data = res.snapshot;
       
@@ -82,7 +86,14 @@ export default function DashboardPage() {
       };
     } catch (e: any) {
       console.error('Failed to load dashboard', e);
-      setError(e.message ?? 'Failed to load dashboard');
+      const errorMessage = e.message || 'Failed to load dashboard';
+      setError(errorMessage);
+      
+      // If it's a server error (500), provide more helpful message
+      if (errorMessage.includes('500') || errorMessage.includes('Server error')) {
+        console.error('💡 Server error detected - this is likely a database connection issue');
+        console.error('💡 Check backend logs for database connection errors');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);

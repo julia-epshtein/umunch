@@ -3,11 +3,28 @@
       "scheme": "elevenlabs",
       "userInterfaceStyle": "automatic",
       "extra": {
-        "backendUrl": "http://172.31.126.134:8000"
+          "backendUrl": "http://10.0.0.40:8000"
       },
       "ios": {
         "infoPlist": {
-          "NSMicrophoneUsageDescription": "This app uses the microphone to record audio."
+          "NSMicrophoneUsageDescription": "This app uses the microphone to record audio.",
+          "NSAppTransportSecurity": {
+            "NSAllowsLocalNetworking": true,
+            "NSExceptionDomains": {
+              "localhost": {
+                "NSExceptionAllowsInsecureHTTPLoads": true,
+                "NSIncludesSubdomains": true
+              },
+              "127.0.0.1": {
+                "NSExceptionAllowsInsecureHTTPLoads": true,
+                "NSIncludesSubdomains": true
+              },
+              "10.0.0.40": {
+                "NSExceptionAllowsInsecureHTTPLoads": true,
+                "NSIncludesSubdomains": true
+              }
+            }
+          }
         },
         "supportsTablet": true,
         "bundleIdentifier": "com.umunch.app"

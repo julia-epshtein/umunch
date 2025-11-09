@@ -1,1 +1,228 @@
+# Your existing lines
 .env
+.env.bak
+
+# Add these critical ones:
+node_modules/
+.expo/
+ios/Pods/
+ios/build/
+android/build/
+android/app/build/
+android/.gradle/
+backend/**/__pycache__/
+*.log
+.DS_Store
+
+# Environment variables (already have these, but keep them)
+.env
+.env.bak
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+package-lock.json  # Keep this if you want to track it, otherwise ignore
+yarn.lock
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xcuserstate
+project.xcworkspace
+xcuserdata/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Metro bundler
+.metro-health-check*
+metro.config.js.bak
+
+# React Native
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+*.log
+*.lock
+
+# iOS / Xcode
+ios/Pods/
+ios/build/
+ios/*.xcworkspace
+ios/*.xcuserdata
+ios/DerivedData/
+ios/*.hmap
+ios/*.ipa
+ios/*.dSYM.zip
+ios/*.dSYM
+ios/.xcode.env.local
+ios/Podfile.lock  # Optional: keep if you want to track exact versions
+ios/Podfile.properties.json  # Optional: can be ignored
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/app/release/
+android/.idea/
+android/local.properties
+android/*.iml
+android/*.hprof
+android/.cxx/
+android/app/debug.keystore  # Keep debug keystore if needed, but ignore others
+android/**/*.apk
+android/**/*.ap_
+android/**/*.aab
+android/**/release/
+android/.externalNativeBuild/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/gradle-wrapper.jar
+
+# Python (for backend)
+backend/**/__pycache__/
+backend/**/*.py[cod]
+backend/**/*$py.class
+backend/**/*.so
+backend/.Python
+backend/venv/
+backend/env/
+backend/ENV/
+backend/*.egg-info/
+backend/.eggs/
+backend/dist/
+backend/build/
+backend/.pytest_cache/
+backend/.coverage
+backend/htmlcov/
+backend/.mypy_cache/
+backend/.dmypy.json
+backend/dmypy.json
+backend/.pytype/
+backend/cython_debug/
+
+# Python Virtual Environment
+venv/
+ENV/
+env/
+.venv/
+
+# IDE - VSCode
+.vscode/
+*.code-workspace
+.vscode/settings.json
+.vscode/launch.json
+
+# IDE - WebStorm / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# IDE - Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# IDE - Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# IDE - Emacs
+*~
+\#*\#
+.\#*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+.jest/
+*.lcov
+
+# Debug
+*.map
+*.orig
+*.rej
+
+# Cache
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.eslintcache
+.stylelintcache
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.bak
+*.backup
+*.old
+*.orig
+*~
+
+# TypeScript
+*.tsbuildinfo
+.tsc-cache/
+
+# Optional: Keep these if you want to track them
+# package-lock.json
+# yarn.lock
+# ios/Podfile.lock
