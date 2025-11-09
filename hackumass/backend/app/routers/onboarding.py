@@ -87,11 +87,47 @@ def save_goals(info: GoalsInfo):
     if not user:
         return {"error": "user_not_found"}
 
-    # TODO: plug real TDEE formula; for now static-ish
-    kcal_target = 2100.0
-    protein_target = 120.0
-    carb_target = 230.0
-    fat_target = 70.0
+    # Calculate BMR using Mifflin-St Jeor Formula
+    weight_kg = user["WEIGHT_LBS"] * 0.453592
+    height_cm = user["HEIGHT_IN"] * 2.54
+    
+    # Get gender for BMR calculation
+    gender = fetch_one(
+        "SELECT gender_identity FROM users WHERE user_id = %s",
+        (user["USER_ID"],)
+    )["GENDER_IDENTITY"]
+    
+    # BMR Formula
+    if gender.upper() == "MALE":
+        bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * 20) + 5  # Assuming age 20 for now
+    else:
+        bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * 20) - 161
+    
+    # Activity level multipliers
+    activity_multipliers = {
+        "NOT_VERY_ACTIVE": 1.2,  # Sedentary
+        "LIGHTLY_ACTIVE": 1.375, # Light exercise
+        "ACTIVE": 1.55,          # Moderate exercise
+        "VERY_ACTIVE": 1.725     # Heavy exercise
+    }
+    
+    # Calculate TDEE (Total Daily Energy Expenditure)
+    activity_multiplier = activity_multipliers.get(user["ACTIVITY_LEVEL"], 1.2)
+    tdee = bmr * activity_multiplier
+    
+    # Adjust calories based on goal
+    if goal_type == "CUT":
+        kcal_target = tdee - 500  # 500 calorie deficit for weight loss
+    elif goal_type == "BULK":
+        kcal_target = tdee + 300  # 300 calorie surplus for muscle gain
+    else:
+        kcal_target = tdee       # Maintain weight
+        
+    # Calculate macro targets
+    protein_target = weight_kg * 2.0  # 2g protein per kg body weight
+    fat_target = (kcal_target * 0.25) / 9  # 25% of calories from fat
+    remaining_calories = kcal_target - (protein_target * 4) - (fat_target * 9)
+    carb_target = remaining_calories / 4  # Rest from carbs
 
     execute(
         """

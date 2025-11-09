@@ -18,11 +18,37 @@ UMunch is a comprehensive nutrition and fitness tracking application specificall
 
 - User authentication and profile management
 - Personalized meal tracking in UMass dining halls
+  - Real-time calorie and macro tracking
+  - Dining hall menu integration
+  - Smart portion size estimation
 - Workout logging and fitness goals
+  - Activity-based calorie burn tracking
+  - Progress visualization
+  - Goal-based recommendations
 - AI-powered nutritional insights
+  - Personalized meal suggestions
+  - Macro-nutrient optimization
+  - Goal alignment analysis
 - Dietary restrictions and allergen management
+  - Allergen filtering
+  - Dietary preference tracking (Halal, Kosher, Vegan, etc.)
+  - Cross-contamination warnings
 - Activity level tracking
+  - TDEE (Total Daily Energy Expenditure) calculation
+  - BMR (Basal Metabolic Rate) estimation
+  - Activity factor adjustments
 - Personalized recommendations
+  - AI-powered meal suggestions
+  - Dining hall recommendations
+  - Nutrition goal optimization
+
+### Network Architecture
+
+- React Native client communicates with FastAPI backend
+- Environment-based API configuration
+- Automatic IP detection for development
+- Fallback handling for network issues
+- Cross-platform compatibility (iOS/Android/Web)
 
 ## Frontend Architecture
 

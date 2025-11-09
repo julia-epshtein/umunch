@@ -23,38 +23,111 @@ A React Native mobile application built with Expo Router for tracking meals, wor
 
 ## Prerequisites
 
+### Frontend
+
 - Node.js (v16 or later)
 - npm or yarn
 - Expo CLI
 - iOS Simulator (Mac only) or Android Emulator
 
+### Backend
+
+- Python 3.9 or later
+- pip (Python package manager)
+- Snowflake account and credentials
+- Virtual environment tool (venv or conda)
+
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/julia-epshtein/umunch.git
 cd umunch/hackumass
 ```
 
-2. Install dependencies:
+2. Install frontend dependencies:
+
 ```bash
 npm install
 ```
 
+3. Set up the backend:
+
+```bash
+cd backend
+python -m venv venv
+# Windows:
+.\venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+4. Configure environment variables:
+
+Frontend (.env):
+
+```
+EXPO_PUBLIC_API_HOST=your_local_ip
+EXPO_PUBLIC_API_PORT=8000
+```
+
+Backend (.env):
+
+```
+SNOWFLAKE_ACCOUNT=your_account
+SNOWFLAKE_USER=your_username
+SNOWFLAKE_PASSWORD=your_password
+SNOWFLAKE_DATABASE=your_database
+SNOWFLAKE_SCHEMA=your_schema
+SNOWFLAKE_WAREHOUSE=your_warehouse
+GEMINI_API_KEY=your_gemini_key
+
+SERVER_HOST=0.0.0.0
+SERVER_PORT=8000
+```
+
 ## Running the App
 
-Start the Expo development server:
+1. Start the backend server:
+
+```bash
+cd backend
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+2. In a new terminal, start the Expo development server:
+
 ```bash
 npx expo start
 ```
 
+## Troubleshooting
+
+### API Connection Issues
+
+- Ensure your mobile device is on the same WiFi network as your development machine
+- Use `ipconfig` (Windows) or `ifconfig` (macOS/Linux) to find your local IP
+- Update EXPO_PUBLIC_API_HOST in .env with your local IP
+- Restart both backend and Expo servers after changing environment variables
+
+### Common Issues
+
+- "undefined:8000" errors: Check your .env configuration
+- Timeout errors: Verify network connectivity and API host settings
+- "No connection" errors: Ensure backend server is running and accessible
+
 Then choose your platform:
+
 - Press `i` for iOS Simulator
 - Press `a` for Android Emulator
 - Press `w` for web browser
 - Scan QR code with Expo Go app on your physical device
 
 Or run directly on a specific platform:
+
 ```bash
 npx expo start --ios      # iOS
 npx expo start --android  # Android
@@ -92,6 +165,7 @@ hackumass/
 ## Development
 
 The app uses Atomic Design principles for component organization:
+
 - **Atoms**: Basic UI elements (Button, Input, Label, etc.)
 - **Molecules**: Simple component combinations (FormField, Card, etc.)
 - **Organisms**: Complex features (SignUpForm, MealTracker, etc.)
@@ -125,11 +199,13 @@ The backend is built with FastAPI and integrates with Snowflake for data warehou
 ### Setting up the Backend
 
 1. Navigate to the backend directory:
+
 ```bash
 cd umunch/hackumass/backend
 ```
 
 2. Create and activate a virtual environment:
+
 ```bash
 # Windows (PowerShell)
 python -m venv venv
@@ -141,11 +217,13 @@ source venv/bin/activate
 ```
 
 3. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 4. Set up environment variables (create a .env file):
+
 ```bash
 SNOWFLAKE_ACCOUNT=your_account
 SNOWFLAKE_USER=your_username
@@ -161,10 +239,12 @@ SERVER_PORT=8000
 ```
 
 **Finding your local IP address:**
+
 - macOS/Linux: Run `ifconfig | grep "inet " | grep -v 127.0.0.1`
 - Windows: Run `ipconfig` and look for IPv4 Address
 
 5. Update the frontend .env file (in `hackumass/.env`):
+
 ```bash
 # Update with your computer's IP address
 EXPO_PUBLIC_API_HOST=your_local_ip
@@ -172,6 +252,7 @@ EXPO_PUBLIC_API_PORT=8000
 ```
 
 5. Update the frontend .env file (in `hackumass/.env`):
+
 ```bash
 # Update with your computer's IP address
 EXPO_PUBLIC_API_HOST=your_local_ip
@@ -179,17 +260,20 @@ EXPO_PUBLIC_API_PORT=8000
 ```
 
 6. Start the development server:
+
 ```bash
 # Use the start script (automatically reads .env file)
 ./start_server.sh
 ```
 
 The start script will:
+
 - Load configuration from your .env file
 - Start the server with the configured host and port
 - Display the network URLs where your API is accessible
 
 The API will be available at:
+
 - **From your computer**: http://localhost:8000
 - **From network devices**: http://YOUR_IP:8000 (configured in .env)
 - API documentation: http://localhost:8000/docs
@@ -202,6 +286,7 @@ The API will be available at:
 The backend integrates with the [Hugging Face MM-Food-100K dataset](https://huggingface.co/datasets/Codatta/MM-Food-100K) to provide images for menu items.
 
 **Testing the integration:**
+
 ```bash
 cd hackumass/backend
 source venv/bin/activate  # if not already activated
@@ -211,6 +296,7 @@ python test_food_images.py
 **New API Endpoints:**
 
 1. **Get menu with images**:
+
    ```
    GET /meals/menu?dining_hall_code=BERKSHIRE&meal_type_code=LUNCH
    ```
@@ -221,6 +307,7 @@ python test_food_images.py
    ```
 
 See `backend/FOOD_IMAGE_INTEGRATION.md` for detailed documentation on:
+
 - How the image matching works
 - Frontend integration examples
 - Performance optimization tips
@@ -229,6 +316,7 @@ See `backend/FOOD_IMAGE_INTEGRATION.md` for detailed documentation on:
 ### API Structure
 
 The backend provides RESTful endpoints for:
+
 - User authentication (signup/login)
 - User profile management
 - Dietary preferences

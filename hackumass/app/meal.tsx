@@ -207,6 +207,23 @@ export default function MealPage() {
   };
 
   const handleConfirmMeal = () => {
+    if (!selectedMeal) return;
+
+    // Calculate calories from macros for verification
+    const calculatedCalories = Math.round(
+      (selectedMeal.protein_g * 4) + // 4 calories per gram of protein
+      (selectedMeal.carb_g * 4) +    // 4 calories per gram of carbs
+      (selectedMeal.fat_g * 9)       // 9 calories per gram of fat
+    );
+
+    // Update the meal with verified calories
+    const verifiedMeal = {
+      ...selectedMeal,
+      calories: calculatedCalories,
+      kcal: calculatedCalories
+    };
+    
+    setSelectedMeal(verifiedMeal);
     setShowConfirmation(true);
     Animated.timing(fadeAnim, {
       toValue: 1,
