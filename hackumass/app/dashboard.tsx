@@ -31,14 +31,8 @@ export default function DashboardPage() {
   // TODO: replace with real logged-in user ID/email
   const externalUserKey = 'test_user_1';
   
-  // 🎭 DEMO: Get actual user from auth - ONLY hardcode for specific demo emails
-  // TODO: Replace with actual auth context/AsyncStorage
-  const loggedInUserEmail = ''; // This should come from your auth system
-  const loggedInUserName = ''; // This should come from your auth system
-  
-  // Only apply hardcoded data if the logged-in user matches demo users
-  const isDemoTiffany = loggedInUserEmail === 'tgray@gmail.com' || loggedInUserName === 'Tiffany Gray';
-  const isDemoRoman = loggedInUserEmail === 'roman.pisani@example.com' || loggedInUserName === 'Roman Pisani';
+  // DEMO: Hardcoded name for demo purposes
+  const demoUserName = 'Roman Pisani';
 
   // 👇 OPTIMIZED: Memoized fetch function with caching
   const fetchDashboardData = useCallback(async (isRefresh = false) => {
@@ -64,11 +58,9 @@ export default function DashboardPage() {
       const res = await UmunchApi.getTodayDashboard(externalUserKey);
       const data = res.snapshot;
       
-      // 🎭 DEMO: Override data for demo users
+      // 🎭 DEMO: Override data to 0s for Roman Pisani
       let finalData = data;
-      
-      if (isDemoRoman) {
-        // Roman: Starting fresh (0 calories/macros)
+      if (demoUserName === 'Roman Pisani') {
         finalData = {
           ...data,
           CONSUMED_KCAL: 0,
@@ -79,19 +71,6 @@ export default function DashboardPage() {
           PROTEIN_TARGET_G: data?.PROTEIN_TARGET_G || 150,
           CARB_TARGET_G: data?.CARB_TARGET_G || 250,
           FAT_TARGET_G: data?.FAT_TARGET_G || 70,
-        };
-      } else if (isDemoTiffany) {
-        // Tiffany: Has eaten an acai bowl (600 cal)
-        finalData = {
-          ...data,
-          CONSUMED_KCAL: 600,
-          CONSUMED_PROTEIN_G: 40,
-          CONSUMED_CARB_G: 100,
-          CONSUMED_FAT_G: 70,
-          KCAL_TARGET: data?.KCAL_TARGET || 1900,
-          PROTEIN_TARGET_G: data?.PROTEIN_TARGET_G || 150,
-          CARB_TARGET_G: data?.CARB_TARGET_G || 250,
-          FAT_TARGET_G: data?.FAT_TARGET_G || 80,
         };
       }
       
